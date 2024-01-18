@@ -3,14 +3,13 @@
 [![Github Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fkjaymiller%2Fcookiecutter-relecloud%2Fbadge%3Fref%3Dmain&style=flat-square)](https://actions-badge.atrox.dev/kjaymiller/cookiecutter-relecloud/goto?ref=main)
 
 ## Table of Contents
-- [Cookiecutter Relecloud](#cookiecutter-relecloud)
-  - [Table of Contents](#table-of-contents)
-  - [What is Cookiecutter-Relecloud?](#what-is-cookiecutter-relecloud)
-  - [Deployment Options](#deployment-options)
-  - [Deploying your cookiecutter template](#deploying-your-cookiecutter-template)
-  - [Getting Updates from this Template](#getting-updates-from-this-template)
-  - [Running your Deployment via DevContainer/Github Codespaces](#running-your-deployment-via-devcontainergithub-codespaces)
-  - [Deploy your template to Azure](#deploy-your-template-to-azure)
+- [Table of Contents](#table-of-contents)
+- [What is Cookiecutter-Relecloud?](#what-is-cookiecutter-relecloud)
+- [Deployment Options](#deployment-options)
+- [Deploying your cookiecutter template](#deploying-your-cookiecutter-template)
+- [Getting Updates from this Template](#getting-updates-from-this-template)
+- [Running your Deployment via DevContainer/Github Codespaces](#running-your-deployment-via-devcontainergithub-codespaces)
+- [Deploy your template to Azure](#deploy-your-template-to-azure)
 
 ## What is Cookiecutter-Relecloud?
 
