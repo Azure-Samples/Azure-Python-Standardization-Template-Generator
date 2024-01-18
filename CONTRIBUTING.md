@@ -1,76 +1,152 @@
-# Contributing to [project-title]
+# Filing Issues
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+**TLDR: File an issue in this repo or one of the generated repos and trust our maintainers to ensure we're triaging them.**
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+When working with templated issues it's important to understand where the problem is originating. In most cases the error is from this repo. We're working to help users understand that and here are some **pending** actions we're taking to ensure that.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+- Create GitHub Issue Template that makes it easier to check the boxes similar to the options in the cookiecutter.json
+- Capture issues in projects and discussions with active moderation
+- Create GitHub Actions that can transfer issues to the correct repo
 
- - [Code of Conduct](#coc)
- - [Issues and Bugs](#issue)
- - [Feature Requests](#feature)
- - [Submission Guidelines](#submit)
+# Troubleshooting
 
-## <a name="coc"></a> Code of Conduct
-Help us keep this project open and inclusive. Please read and follow our [Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+## non-Python Package dependencies
 
-## <a name="issue"></a> Found an Issue?
-If you find a bug in the source code or a mistake in the documentation, you can help us by
-[submitting an issue](#submit-issue) to the GitHub Repository. Even better, you can
-[submit a Pull Request](#submit-pr) with a fix.
+`Cookiecutter-relecloud` builds instances that include support for [DevContainers](https://containers.dev) and deployments via [Azure CLI](https://aka.ms/azure-cli) or [Azure Developer CLI](https://aka.ms/azd).
 
-## <a name="feature"></a> Want a Feature?
-You can *request* a new feature by [submitting an issue](#submit-issue) to the GitHub
-Repository. If you would like to *implement* a new feature, please submit an issue with
-a proposal for your work first, to be sure that we can use it.
+You will need to ensure all required products are installed and up to date.
 
-* **Small Features** can be crafted and directly [submitted as a Pull Request](#submit-pr).
+### Installing Dev Containers (VS Code)
 
-## <a name="submit"></a> Submission Guidelines
+If using VS Code you can install Dev Containers using the Dev Containers Extension. You will need docker installed. Alternatively, you can develop inside of a [GitHub Codespaces](https://github.com/features/codespaces) Instance.
 
-### <a name="submit-issue"></a> Submitting an Issue
-Before you submit an issue, search the archive, maybe your question was already answered.
+### Installing Azure CLI and Updating the Bicep Template
 
-If your issue appears to be a bug, and hasn't been reported, open a new issue.
-Help us to maximize the effort we can spend fixing issues and adding new
-features, by not reporting duplicate issues.  Providing the following information will increase the
-chances of your issue being dealt with quickly:
+To install the Azure CLI, follow the instructions that best fit your platform at <https://aka.ms/azure-cli>
 
-* **Overview of the Issue** - if an error is being thrown a non-minified stack trace helps
-* **Version** - what version is affected (e.g. 0.1.2)
-* **Motivation for or Use Case** - explain what are you trying to do and why the current behavior is a bug for you
-* **Browsers and Operating System** - is this a problem with all browsers?
-* **Reproduce the Error** - provide a live example or a unambiguous set of steps
-* **Related Issues** - has a similar issue been reported before?
-* **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be
-  causing the problem (line of code or commit)
+Azure CLI includes the Bicep CLI you can ensure that it is up to date using the command:
 
-You can file new issues by providing the above information at the corresponding repository's issues link: https://github.com/[organization-name]/[repository-name]/issues/new].
+```shell
+az bicep upgrade
+```
 
-### <a name="submit-pr"></a> Submitting a Pull Request (PR)
-Before you submit your Pull Request (PR) consider the following guidelines:
+### Install Azure Developer CLI (AZD)
 
-* Search the repository (https://github.com/[organization-name]/[repository-name]/pulls) for an open or closed PR
-  that relates to your submission. You don't want to duplicate effort.
+To install the Azure Developer CLI, follow the instructions that best fit your platform at <https://aka.ms/azd>.
 
-* Make your changes in a new git fork:
+You can ensure that it is up to date using the command:
 
-* Commit your changes using a descriptive commit message
-* Push your fork to GitHub:
-* In GitHub, create a pull request
-* If we suggest changes then:
-  * Make the required updates.
-  * Rebase your fork and force push to your GitHub repository (this will update your Pull Request):
+```shell
+curl -fsSL https://aka.ms/install-azd.sh | bash
+```
 
-    ```shell
-    git rebase master -i
-    git push -f
-    ```
+## Testing
 
-That's it! Thank you for your contribution!
+### Creating Tests
+
+We have two sets of tests:
+
+1. Generation tests - Tests that verify project generation is accurate
+2. Application tests - Tests that are created by cookiecutter that are ran by the generated project
+
+Both sets of tests are created using [Pytest](https://pytest.org).
+
+### Generation tests
+
+The generation tests are located at `/tests/`
+
+Generation tests use [pytest-cookies](https://github.com/hackebrot/pytest-cookies) to generate an iteration of each project and run a series of tests.
+
+You'll need to include the fixture `bakery` in your new tests to ensure that the desired outcome is happening across all of the products.
+
+```python
+def tests_something_happened(bakery, context)
+```
+
+### Application tests
+
+Application tests are in `{{cookiecutter.__src_folder_name}}/tests/`.
+
+Application tests use [playwright](https://playwright.dev/python/) and [pytest-playwright](https://github.com/microsoft/playwright-pytest). If you're testing the generated projects, you'll need to have `playwright` installed with dependencies.
+
+```sh
+playwright install chromium --with-deps
+```
+
+### Running Tests
+
+Our goal is to ensure that the template is always up to date with the latest versions of the tools we use. Tests are run using [GitHub Actions](https://github.com/kjaymiller/cookiecutter-relecloud/actions). You should also run the tests locally before submitting a PR.
+
+There are plenty of tests our repo. The majority of tests are focused on testing deployment scendarios. These cannot be tested without creating a subprocess. These tests are relatively slow and should not be ran on every commit. Instead, they are ran when a PR is submitted.
+
+## Adding a New Framework
+
+If you would like to add a new framework there are a few things that you need to consider.
+
+- What database technologies is the framework compatible with?
+- What deployment technologies is the framework compatible with?
+- How do you test the framework?
+- What are the best practices for the framework?
+- What are the best practices for the framework on Azure?
+
+### Database Technology Support
+
+We currently support the following database technologies:
+    - PostgreSQL
+    - MongoDB
+
+Your framework should be compatible with at least one of these technologies. If it is not, you will need to add support for the technology to the framework.
+
+## Adding a New Database
+
+## Post Build Work
+
+### Linting Files
+
+Generating files often have issues with whitespace among other things. To ensure that our generated code is a clean as possible, we run a linter on the generated files. You can add your linter function in `{{cookiecutter.__src_folder_name}}/hooks/linters.py`. If you are trying to add a linting function, be sure to call it in the `lint()` function.
+
+```python
+# {{cookiecutter.__src_folder_name}}/hooks/linters.py
+
+def my_new_linter() -> None:
+    """Linting function for file type"""
+    # Do something
+
+... # Other linters
+
+def lint() -> None:
+    ... # other linters
+    my_new_linter()
+```
+
+```python
+```
+
+### Removing Unused Files
+
+If you are adding functionality that requires specific files for that resource to work, you will need to add a post build step to remove the files that are not needed if that resource is not selected.
+
+You can add your removal function in `{{cookiecutter.__src_folder_name}}/hooks/removers.py` and add a check for it in the `check for files()` function.
+
+```python
+
+## Testing Frameworks and Databases
+In our `tests/conftest.py` we have a fixture style we refer to as `bakery`. These session fixtures are used to generate a project and run tests against it.
+
+You'll need to create a new bakery for your scenario (if one does not already exist). You can do this by adding a new fixture to the `conftest.py` file.
+
+```python
+@pytest.fixture(
+        scope="module",
+        params=[*CONTEXT_OVERRIDE(["<ALL>","<RELEVANT>","<FRAMEWORKS"], ["<ALL>","<RELEVANT>","<DATABASES>"])],
+)
+def new_bakery(
+    request,
+    scope="module",
+    default_context,
+    cookies_session,
+):
+    """Validates settings and options for Flask Deployments"""
+    extra_context = {**default_context, **request.param}
+    result = cookies_session.bake(extra_context=extra_context)
+    yield result
