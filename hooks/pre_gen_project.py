@@ -18,15 +18,6 @@ def check_not_implemented() -> None:
         )
 
 
-def tests_bicep_is_installed():
-    """Tests that bicep is installed"""
-
-    bicep_check = subprocess.run(["az", "bicep", "version"], capture_output=True)
-
-    if bicep_check.stderr:
-        rich.print("""[bold yellow][WARNING]:[/bold yellow] An error occured with your bicep setup!
-Please check that [yellow]`az bicep install`[/yellow] was successful before deploying your project.""")
-
 if __name__ == "__main__":
     check_not_implemented()
-    tests_bicep_is_installed()
+
