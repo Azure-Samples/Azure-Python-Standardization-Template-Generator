@@ -1,0 +1,95 @@
+name: Run Python E2E tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test_package:
+    {% raw %}
+    name: Test ${{ matrix.os }} Python ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
+    {% endraw %}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python_version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    services:
+      db:
+        {% if "mongo" in cookiecutter.db_resource %}
+        image: mongo:4.2.24
+        ports:
+          - 27017:27017
+        env:
+            MONGO_INITDB_ROOT_USERNAME: mongodb
+            MONGO_INITDB_ROOT_PASSWORD: mongodb
+            MONGO_INITDB_DATABASE: relecloud
+        options: >-
+          --health-cmd mongo
+          --health-start-period 20s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        {% endif %}
+        {% if "postgres" in cookiecutter.db_resource %}
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        {% endif %}
+    steps:
+        - uses: actions/checkout@v3
+        - name: Setup python
+          uses: actions/setup-python@v2
+          with:
+            {% raw %}
+            python-version: ${{ matrix.python_version }}
+            architecture: x64
+            {% endraw %}
+        - name: Install dependencies
+          run: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install -r requirements-dev.txt
+            playwright install chromium --with-deps
+            {% if cookiecutter.project_backend in ("flask", "fastapi") %}
+            python3 -m pip install -e src
+            {% endif %}
+        - name: Seed data and run Pytest tests
+          run: |
+            {% if cookiecutter.project_backend == "django" %}
+            python3 src/manage.py migrate
+            python3 src/manage.py loaddata src/seed_data.json
+            {% endif %}
+            {% if cookiecutter.project_backend == "flask" %}
+            {% if "postgres" in cookiecutter.db_resource %}
+            python3 -m flask --app src.flaskapp db upgrade --directory src/flaskapp/migrations
+            python3 -m flask --app src.flaskapp seed --filename src/seed_data.json
+            {% endif %}
+            {% if "mongodb" in cookiecutter.db_resource %}
+            python3 -m flask --app src.flaskapp seed --filename="src/seed_data.json" --drop
+            {% endif %}
+            {% endif %}
+            {% if cookiecutter.project_backend == "fastapi" %}
+            python3 src/fastapi_app/seed_data.py
+            {% endif %}
+            python3 -m pytest
+          env:
+            {% if "postgres" in cookiecutter.db_resource %}
+            POSTGRES_HOST: localhost
+            POSTGRES_USERNAME: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DATABASE: postgres
+            {% endif %}
+            {% if "mongodb" in cookiecutter.db_resource %}
+            MONGODB_HOST: localhost
+            MONGODB_USERNAME: mongodb
+            MONGODB_PASSWORD: mongodb
+            MONGODB_DATABASE: relecloud
+            MONGODB_PORT: 27017
+            {% endif %}
