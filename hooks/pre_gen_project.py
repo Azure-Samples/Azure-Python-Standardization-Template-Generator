@@ -18,13 +18,6 @@ def check_not_implemented() -> None:
         )
 
 
-def tests_bicep_is_installed():
-    """Tests that bicep is installed"""
-
-    bicep_check = subprocess.run(["az", "bicep", "version"], capture_output=True)
-
-
-
 if __name__ == "__main__":
     check_not_implemented()
-    tests_bicep_is_installed()
+
