@@ -4,7 +4,7 @@ import logging
 import pathlib
 import subprocess
 import random
-from typing import Generator, Optional
+from typing import Generator
 import typer
 import re
 import json
