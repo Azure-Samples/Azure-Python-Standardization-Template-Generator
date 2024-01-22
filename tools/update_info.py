@@ -186,7 +186,7 @@ def update_repo(
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
-        cruft.create(source, output_dir=path, extra_context=extra_context, skip_apply_ask=True, overwrite_if_exists=True)
+        cruft.create(source, output_dir=path.parent, extra_context=extra_context,no_input=True, overwrite_if_exists=True)
         subprocess.check_output(
             ["git", "add", "."],
             text=True,
