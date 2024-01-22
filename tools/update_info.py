@@ -181,7 +181,9 @@ def update_repo(
     )
     
     if force:
+        logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
+        logger.info(f"Linking {source} to {path}")
         cruft.link(source, project_dir=path,)
         subprocess.check_output(
             ["git", "add", "."],
@@ -272,7 +274,7 @@ def update_repos(
     patterns = get_repos_by_pattern(pattern)
     patterns_str = '\n- '.join(patterns)
     logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n{patterns_str}")
-    force = source != None
+    force = source is not None
 
     for repo in patterns:
         update_repo(repo=repo, path=path, branch=branch, checkout=checkout, submit_pr=submit_pr, source=source, force=force)
