@@ -183,6 +183,16 @@ def update_repo(
     if force:
         path.joinpath(".cruft.json").unlink()
         cruft.link(source, project_dir=path,)
+        subprocess.check_output(
+            ["git", "add", "."],
+            text=True,
+            cwd=path,
+        )
+        subprocess.check_output(
+            ["git", "commit", "-m", "remove cruft.json"],
+            text=True,
+            cwd=path,
+        )
 
     cruft.update(
         path,
