@@ -182,13 +182,14 @@ def update_repo(
     
     if force:
         with open(path.joinpath(".cruft.json"), "r") as f:
-            extra_context=json.loads(f.read())["context"]["cookiecutter"]
-            extra_context['cookiecutter']['project_name'] = "azure"
-            logger.info(f"{extra_context=}")
+            extra_context=json.loads(f.read()["context"]["cookiecutter"])
+            extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_Key.startswith("_")}
+        extra_context['project_name'] = "azure"
+        logger.info(f"{extra_context=}")
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
-        cruft.create(source, output_dir=path.parent, extra_context=extra_context,no_input=True, overwrite_if_exists=True)
+        cruft.create(source, output_dir=path.parent, extra_context=extra_context, no_input=True, overwrite_if_exists=True)
         subprocess.check_output(
             ["git", "add", "."],
             text=True,
