@@ -23,7 +23,6 @@ products:
 {% if "cosmos" in cookiecutter.db_resource %}
 - azure-cosmos-db
 {% endif %}
-- azure-pipelines
 urlFragment: azure-{{cookiecutter.project_backend}}-{{cookiecutter.db_resource}}-{{cookiecutter.project_host}}
 name: Deploy {{web_framework}} Application with {{db}} via {{azure_host}} (Python)
 description: This project deploys a web application for a space travel agency using {{web_framework}} with Python. 
