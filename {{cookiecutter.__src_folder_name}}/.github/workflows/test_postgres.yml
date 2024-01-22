@@ -29,41 +29,41 @@ jobs:
         if: matrix.os == 'macos-latest-xlarge'
           run: |
             brew install postgresql@14
+      - name: Configure PostgreSQL
       - uses: ikalnytskyi/action-setup-postgres@v4
       - name: Setup python
-    steps:
-        - uses: actions/checkout@v3
-        - name: Setup python
-          uses: actions/setup-python@v2
-          with:
-            {% raw %}
-            python-version: ${{ matrix.python_version }}
-            architecture: x64
-            {% endraw %}
-        - name: Install dependencies
-          run: |
-            python3 -m pip install --upgrade pip
-            python3 -m pip install -r requirements-dev.txt
-            playwright install chromium --with-deps
-            {% if cookiecutter.project_backend in ("flask", "fastapi") %}
-            python3 -m pip install -e src
-            {% endif %}
-        - name: Seed data and run Pytest tests
-          run: |
-            {% if cookiecutter.project_backend == "django" %}
-            python3 src/manage.py migrate
-            python3 src/manage.py loaddata src/seed_data.json
-            {% endif %}
-            {% if cookiecutter.project_backend == "flask" %}
-            python3 -m flask --app src.flaskapp db upgrade --directory src/flaskapp/migrations
-            python3 -m flask --app src.flaskapp seed --filename src/seed_data.json
-            {% endif %}
-            {% if cookiecutter.project_backend == "fastapi" %}
-            python3 src/fastapi_app/seed_data.py
-            {% endif %}
-            python3 -m pytest
-          env:
-            POSTGRES_HOST: localhost
-            POSTGRES_USERNAME: postgres
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_DATABASE: postgres
+      - uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          {% raw %}
+          python-version: ${{ matrix.python_version }}
+          architecture: x64
+          {% endraw %}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements-dev.txt
+          playwright install chromium --with-deps
+          {% if cookiecutter.project_backend in ("flask", "fastapi") %}
+          python3 -m pip install -e src
+          {% endif %}
+      - name: Seed data and run Pytest tests
+        run: |
+          {% if cookiecutter.project_backend == "django" %}
+          python3 src/manage.py migrate
+          python3 src/manage.py loaddata src/seed_data.json
+          {% endif %}
+          {% if cookiecutter.project_backend == "flask" %}
+          python3 -m flask --app src.flaskapp db upgrade --directory src/flaskapp/migrations
+          python3 -m flask --app src.flaskapp seed --filename src/seed_data.json
+          {% endif %}
+          {% if cookiecutter.project_backend == "fastapi" %}
+          python3 src/fastapi_app/seed_data.py
+          {% endif %}
+          python3 -m pytest
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_USERNAME: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DATABASE: postgres
