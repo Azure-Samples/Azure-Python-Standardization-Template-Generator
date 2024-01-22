@@ -13,6 +13,7 @@ def move_db_files(db_resource: str):
     """
 
     if "postgres" in db_resource:
+        logging.debug("Postgres selected. Renaming postgres files")
         shutil.move(
             "src/db/postgres_models.py",
             "src/flask/flaskapp/models.py"
@@ -21,7 +22,15 @@ def move_db_files(db_resource: str):
             "src/db/postgres_seeder.py",
             "src/flask/flaskapp/seeder.py",
         )
+        shutil.move(
+            ".github/workflows/test_postgres.yml",
+            ".github/workflows/test.yml"
+        )
+    else:
+        pathlib.Path(".github/workflows/test_postgres.yml").unlink()
+
     if "mongo" in db_resource:
+        logging.debug("MongoDB selected. Renaming MongoDB files")
         shutil.move(
             "src/db/mongo_models.py",
             "src/flask/flaskapp/models.py"
@@ -30,7 +39,12 @@ def move_db_files(db_resource: str):
             "src/db/mongo_seeder.py",
             "src/flask/flaskapp/seeder.py",
         )
-
+        shutil.move(
+            ".github/workflows/test_mongodb.yml",
+            ".github/workflows/test.yml"
+        )
+    else:
+        pathlib.Path(".github/workflows/test_mongodb.yml").unlink()
 def remove_aca_files() -> None:
     """Removes unneeded files if aca is not selected"""
     file_names = (
