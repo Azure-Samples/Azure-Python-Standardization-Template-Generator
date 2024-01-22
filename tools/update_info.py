@@ -270,7 +270,7 @@ def update_repos(
     source: Annotated[str, typer.Option(
         "--source",
         "-s",
-        help="The source to use for cruft updates `source` parameter.",
+        help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
     )]=None,
 ) -> None:
 
