@@ -183,6 +183,7 @@ def update_repo(
     if force:
         with open(path.joinpath(".cruft.json"), "r") as f:
             extra_context=json.loads(f.read())["context"]["cookiecutter"]
+            logger.info(f"{extra_context=}")
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
