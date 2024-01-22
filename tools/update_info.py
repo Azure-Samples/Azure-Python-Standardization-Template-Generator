@@ -181,10 +181,12 @@ def update_repo(
     )
     
     if force:
+        with open(path.joinpath(".cruft.json"), "r") as f:
+            extra_context=json.loads(f.read())["cookiecutter"]
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
-        cruft.link(source, project_dir=path,)
+        cruft.create(source, project_dir=path, extra_context=extra_context, skip_apply_ask=True, overwrite_if_exists=True)
         subprocess.check_output(
             ["git", "add", "."],
             text=True,
@@ -196,12 +198,13 @@ def update_repo(
             cwd=path,
         )
 
-    cruft.update(
-        path,
-        skip_apply_ask=True,
-        extra_context=kwargs,
-        checkout=checkout if checkout else None,
-    )
+    else:
+        cruft.update(
+            path,
+            skip_apply_ask=True,
+            extra_context=kwargs,
+            checkout=checkout if checkout else None,
+        )
 
     if not subprocess.check_output(
         ["git", "status", "--porcelain"],
