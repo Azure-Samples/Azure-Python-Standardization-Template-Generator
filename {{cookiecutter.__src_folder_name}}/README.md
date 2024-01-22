@@ -26,7 +26,7 @@ products:
 - azure-pipelines
 urlFragment: azure-{{cookiecutter.project_backend}}-{{cookiecutter.db_resource}}-{{cookiecutter.project_host}}
 name: Deploy {{web_framework}} Application with {{db}} via {{azure_host}} (Python)
-description: This project deploys a web application for a space travel agency using {{web_framework}} with Python. 
+description: This project deploys a web application for a space travel agency using {{web_framework}} with Python, and is set up for easy deployment with the Azure Developer CLI.
 ---
 <!-- YAML front-matter schema: https://review.learn.microsoft.com/en-us/help/contribute/samples/process/onboarding?branch=main#supported-metadata-fields-for-readmemd -->
 
