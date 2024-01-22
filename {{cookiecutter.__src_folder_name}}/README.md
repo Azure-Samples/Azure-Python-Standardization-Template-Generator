@@ -1,5 +1,37 @@
 {% extends 'abbreviations.txt' %}
 {% block cc %}
+---
+page_type: sample
+languages:
+- azdeveloper
+- python
+- bicep
+- html
+- css
+- scss
+products:
+- azure
+# {% if cookiecutter.project_host == "aca" %}
+- azure-container-apps
+# {% endif %}
+# {% if cookiecutter.project_host == "appservice" %}
+- azure-app-service
+# {% endif %}
+# {% if "postgres" in cookiecutter.db_resource %}
+- azure-postgresql
+# {% endif %}
+# {% if "cosmos" in cookiecutter.db_resource %}
+- azure-cosmos-db
+# {% endif %}
+- azure-pipelines
+urlFragment: azure-{{cookiecutter.project_backend}}-{{cookiecutter.db_resource}}-{{cookiecutter.project_host}}
+name: Deploy {{web_framework}} Application with {{db}} via {{azure_host}} (Python)
+description: This project deploys a web application for a space travel agency using {{web_framework}} with Python. 
+---
+<!-- YAML front-matter schema: https://review.learn.microsoft.com/en-us/help/contribute/samples/process/onboarding?branch=main#supported-metadata-fields-for-readmemd -->
+
+{% extends 'abbreviations.txt' %}
+{% block cc %}
 # Deploy {{web_framework}} Application with {{db}} via Azure Container Apps
 
 This project deploys a web application for a space travel agency using {{web_framework}}. The application can be deployed to Azure with {{azure_host}} using the [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview).
