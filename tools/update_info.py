@@ -182,9 +182,9 @@ def update_repo(
     
     if force:
         with open(path.joinpath(".cruft.json"), "r") as f:
-            extra_context=json.loads(f.read()["context"]["cookiecutter"])
-            extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_Key.startswith("_")}
-        extra_context['project_name'] = "azure"
+            extra_context=json.loads(f.read())["context"]["cookiecutter"]
+            extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_key.startswith("_")}
+        extra_context['__src_folder_name'] = repo 
         logger.info(f"{extra_context=}")
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
