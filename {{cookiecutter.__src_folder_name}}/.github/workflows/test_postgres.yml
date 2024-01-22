@@ -29,9 +29,7 @@ jobs:
         if: matrix.os == 'macos-latest-xlarge'
           run: |
             brew install postgresql@14
-      - name: Configure PostgreSQL
       - uses: ikalnytskyi/action-setup-postgres@v4
-      - name: Setup python
       - uses: actions/checkout@v3
       - name: Setup python
         uses: actions/setup-python@v2
@@ -48,7 +46,7 @@ jobs:
           {% if cookiecutter.project_backend in ("flask", "fastapi") %}
           python3 -m pip install -e src
           {% endif %}
-      - name: Seed data and run Pytest tests
+      - name: Seed data
         run: |
           {% if cookiecutter.project_backend == "django" %}
           python3 src/manage.py migrate
@@ -61,6 +59,11 @@ jobs:
           {% if cookiecutter.project_backend == "fastapi" %}
           python3 src/fastapi_app/seed_data.py
           {% endif %}
+      - name: Run tests Windows
+          if: runner.os == 'windows'
+          python3 -m pytest --ignore=src/tests/local/test_gunicorn.py
+      - name: Run tests 
+          if: runner.os != 'windows'
           python3 -m pytest
         env:
           POSTGRES_HOST: localhost
