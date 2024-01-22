@@ -4,7 +4,7 @@ import logging
 import pathlib
 import subprocess
 import random
-from typing import Generator
+from typing import Generator, Optional
 import typer
 import re
 import json
@@ -131,10 +131,12 @@ def get_repos_by_pattern(pattern:str, repos: list[str]=list(get_azure_combinatio
 
 def update_repo(
         repo:str,
+        source:str,
         path: pathlib.Path,
+        force: bool=False,
         branch:str="cruft/update",
         checkout:str|None=None,
-        submit_pr:bool=True,
+        submit_pr:bool=False,
         **kwargs) -> None:
     """
     Updates the repo with the provided name
@@ -153,6 +155,7 @@ def update_repo(
     file_handler.setFormatter(per_file_formatter)
     url = f"git@github.com:Azure-Samples/{repo}.git"
     logger.info(f"Cloning {checkout} branch from GitHub from {url}")
+    logger.info(f"Saving to {path}")
     path = path.joinpath(repo)
 
     try:
@@ -176,6 +179,10 @@ def update_repo(
         text=True,
         cwd=path,
     )
+    
+    if force:
+        path.joinpath(".cruft.json").unlink()
+        cruft.link(source, project_dir=path,)
 
     cruft.update(
         path,
@@ -199,24 +206,24 @@ def update_repo(
 
     logger.info(f"adding Changes and Creating a PR for {path}")
 
-    subprocess.check_output(
-        ["git", "add", "."],
-        text=True,
-        cwd=path,
-    )
-    subprocess.check_output(
-        ["git", "commit", "-m", "Cruft Update"],
-        text=True,
-        cwd=path,
-    )
-    logger.info(f"Pushing changes to {branch}")
-    subprocess.check_output(
-        ["git", "push", "--set-upstream", "origin", branch],
-        text=True,
-        cwd=path,
-    )
-
     if submit_pr:
+        subprocess.check_output(
+            ["git", "add", "."],
+            text=True,
+            cwd=path,
+        )
+        subprocess.check_output(
+            ["git", "commit", "-m", "Cruft Update"],
+            text=True,
+            cwd=path,
+        )
+        logger.info(f"Pushing changes to {branch}")
+        subprocess.check_output(
+            ["git", "push", "--set-upstream", "origin", branch],
+            text=True,
+            cwd=path,
+        )
+
         logger.info(f"Creating PR for {path}")
         subprocess.check_output(
             ["gh", "pr", "create", "--fill", "--reviewer", "kjaymiller,pamelafox"],
@@ -241,16 +248,24 @@ def update_repos(
         "-c",
         help="The branch to use for cruft updates `checkout` parameter.",
     )]=None,
-    ) -> None:
+    submit_pr: Annotated[bool, typer.Option("--no-pr", "-P")]=False,
+    source: Annotated[str, typer.Option(
+        "--source",
+        "-s",
+        help="The source to use for cruft updates `source` parameter.",
+    )]=None,
+) -> None:
+
     """Updates all repos that match the provided pattern or all of the repos if no pattern is provided."""
     logger.info(f"Request updates to repos matching \"{pattern}\" requested. Attrs: \n\t{branch=}\n\t{checkout=}")
     path = create_base_folder()
     patterns = get_repos_by_pattern(pattern)
     patterns_str = '\n- '.join(patterns)
     logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n{patterns_str}")
+    force = source != None
 
     for repo in patterns:
-        update_repo(repo=repo, path=path, branch=branch, checkout=checkout)
+        update_repo(repo=repo, path=path, branch=branch, checkout=checkout, submit_pr=submit_pr, source=source, force=force)
 
 if __name__ == "__main__":
     app()
