@@ -131,10 +131,12 @@ def get_repos_by_pattern(pattern:str, repos: list[str]=list(get_azure_combinatio
 
 def update_repo(
         repo:str,
+        source:str,
         path: pathlib.Path,
+        force: bool=False,
         branch:str="cruft/update",
         checkout:str|None=None,
-        submit_pr:bool=True,
+        submit_pr:bool=False,
         **kwargs) -> None:
     """
     Updates the repo with the provided name
@@ -153,6 +155,7 @@ def update_repo(
     file_handler.setFormatter(per_file_formatter)
     url = f"git@github.com:Azure-Samples/{repo}.git"
     logger.info(f"Cloning {checkout} branch from GitHub from {url}")
+    logger.info(f"Saving to {path}")
     path = path.joinpath(repo)
 
     try:
@@ -176,13 +179,35 @@ def update_repo(
         text=True,
         cwd=path,
     )
+    
+    if force:
+        with open(path.joinpath(".cruft.json"), "r") as f:
+            extra_context=json.loads(f.read())["context"]["cookiecutter"]
+            extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_key.startswith("_")}
+        extra_context['__src_folder_name'] = repo 
+        logger.info(f"{extra_context=}")
+        logger.info(f"Removing cruft.json from {path}")
+        path.joinpath(".cruft.json").unlink()
+        logger.info(f"Linking {source} to {path}")
+        cruft.create(source, output_dir=path.parent, extra_context=extra_context, no_input=True, overwrite_if_exists=True)
+        subprocess.check_output(
+            ["git", "add", "."],
+            text=True,
+            cwd=path,
+        )
+        subprocess.check_output(
+            ["git", "commit", "-m", "remove cruft.json"],
+            text=True,
+            cwd=path,
+        )
 
-    cruft.update(
-        path,
-        skip_apply_ask=True,
-        extra_context=kwargs,
-        checkout=checkout if checkout else None,
-    )
+    else:
+        cruft.update(
+            path,
+            skip_apply_ask=True,
+            extra_context=kwargs,
+            checkout=checkout if checkout else None,
+        )
 
     if not subprocess.check_output(
         ["git", "status", "--porcelain"],
@@ -199,24 +224,24 @@ def update_repo(
 
     logger.info(f"adding Changes and Creating a PR for {path}")
 
-    subprocess.check_output(
-        ["git", "add", "."],
-        text=True,
-        cwd=path,
-    )
-    subprocess.check_output(
-        ["git", "commit", "-m", "Cruft Update"],
-        text=True,
-        cwd=path,
-    )
-    logger.info(f"Pushing changes to {branch}")
-    subprocess.check_output(
-        ["git", "push", "--set-upstream", "origin", branch],
-        text=True,
-        cwd=path,
-    )
-
     if submit_pr:
+        subprocess.check_output(
+            ["git", "add", "."],
+            text=True,
+            cwd=path,
+        )
+        subprocess.check_output(
+            ["git", "commit", "-m", "Cruft Update"],
+            text=True,
+            cwd=path,
+        )
+        logger.info(f"Pushing changes to {branch}")
+        subprocess.check_output(
+            ["git", "push", "--set-upstream", "origin", branch],
+            text=True,
+            cwd=path,
+        )
+
         logger.info(f"Creating PR for {path}")
         subprocess.check_output(
             ["gh", "pr", "create", "--fill", "--reviewer", "kjaymiller,pamelafox"],
@@ -241,16 +266,24 @@ def update_repos(
         "-c",
         help="The branch to use for cruft updates `checkout` parameter.",
     )]=None,
-    ) -> None:
+    submit_pr: Annotated[bool, typer.Option("--no-pr", "-P")]=False,
+    source: Annotated[str, typer.Option(
+        "--source",
+        "-s",
+        help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
+    )]=None,
+) -> None:
+
     """Updates all repos that match the provided pattern or all of the repos if no pattern is provided."""
     logger.info(f"Request updates to repos matching \"{pattern}\" requested. Attrs: \n\t{branch=}\n\t{checkout=}")
     path = create_base_folder()
     patterns = get_repos_by_pattern(pattern)
     patterns_str = '\n- '.join(patterns)
     logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n{patterns_str}")
+    force = source is not None
 
     for repo in patterns:
-        update_repo(repo=repo, path=path, branch=branch, checkout=checkout)
+        update_repo(repo=repo, path=path, branch=branch, checkout=checkout, submit_pr=submit_pr, source=source, force=force)
 
 if __name__ == "__main__":
     app()
