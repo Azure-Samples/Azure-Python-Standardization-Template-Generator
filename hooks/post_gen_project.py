@@ -24,7 +24,7 @@ def move_db_files(db_resource: str):
         )
         shutil.move(
             ".github/workflows/test_postgres.yml",
-            ".github/workflows/test.yml"
+            ".github/workflows/tests.yml"
         )
     else:
         pathlib.Path(".github/workflows/test_postgres.yml").unlink()
@@ -41,7 +41,7 @@ def move_db_files(db_resource: str):
         )
         shutil.move(
             ".github/workflows/test_mongodb.yml",
-            ".github/workflows/test.yml"
+            ".github/workflows/tests.yml"
         )
     else:
         pathlib.Path(".github/workflows/test_mongodb.yml").unlink()
