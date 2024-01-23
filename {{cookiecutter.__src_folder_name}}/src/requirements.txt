@@ -13,6 +13,6 @@ whitenoise
 opencensus-ext-azure
 opencensus-ext-django
 {% if 'postgres' in cookiecutter.db_resource %}
-psycopg2-binary==2.9.6
+psycopg2
 {% endif %}
 {% endif %}
