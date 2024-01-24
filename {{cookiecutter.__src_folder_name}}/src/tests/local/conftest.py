@@ -12,6 +12,7 @@ import pathlib
 {% if cookiecutter.project_backend == "django" %}
 import os
 {% endif %}
+import sys
 
 {# third-party library imports #}
 import pytest
@@ -46,7 +47,8 @@ from flaskapp import db
 
 {% if cookiecutter.project_backend in ("flask", "fastapi") %}
 # Set start method to "fork" to avoid issues with pickling on OSes that default to "spawn"
-multiprocessing.set_start_method("fork")
+if sys.platform != "win32":
+    multiprocessing.set_start_method("fork")
 {% endif %}
 
 {% if cookiecutter.project_backend == "fastapi" %}

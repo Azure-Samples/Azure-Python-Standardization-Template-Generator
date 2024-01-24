@@ -3,13 +3,13 @@ name = "fastapi_app"
 version = "1.0.0"
 description = "{{cookiecutter.__project_short_description}}"
 dependencies = [
-    "fastapi==0.100.1",
-    "jinja2==3.1.2",
-    "uvicorn[standard]==0.23.2",
-    "python-multipart==0.0.6",
+    "fastapi",
+    "jinja2",
+    "uvicorn[standard]",
+    "python-multipart",
     {% if 'postgres' in cookiecutter.db_resource %}
-    "psycopg2-binary==2.9.6",
-    "sqlmodel==0.0.8",
+    "psycopg2",
+    "sqlmodel",
     {% endif %}
 ]
 
