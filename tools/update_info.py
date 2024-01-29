@@ -161,7 +161,7 @@ def update_repo(
     try:
         if checkout is not None:
             subprocess.check_output(
-                ["git", "clone", "-b", checkout, url],
+                ["git", "clone", url],
                 cwd=path.parent,
             )
         else:
