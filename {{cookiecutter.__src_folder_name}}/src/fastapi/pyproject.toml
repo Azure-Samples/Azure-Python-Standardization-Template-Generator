@@ -3,14 +3,13 @@ name = "fastapi_app"
 version = "1.0.0"
 description = "{{cookiecutter.__project_short_description}}"
 dependencies = [
+    "azure-montitor-opentelemetry",
     "fastapi",
     "jinja2",
     "uvicorn[standard]",
     "python-multipart",
-    {% if 'postgres' in cookiecutter.db_resource %}
     "psycopg2",
     "sqlmodel",
-    {% endif %}
 ]
 
 [build-system]
