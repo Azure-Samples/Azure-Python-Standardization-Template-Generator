@@ -10,8 +10,7 @@ django
 django-crispy-forms
 crispy-bootstrap4
 whitenoise
-opencensus-ext-azure
-opencensus-ext-django
+azure-monitor-opentelemetry
 {% if 'postgres' in cookiecutter.db_resource %}
 psycopg2
 {% endif %}
