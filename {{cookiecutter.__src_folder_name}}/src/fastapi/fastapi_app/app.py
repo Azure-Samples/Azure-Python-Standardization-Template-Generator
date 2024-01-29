@@ -42,14 +42,14 @@ def destinations(request: Request):
 def destination_detail(request: Request, pk: int):
     with Session(engine) as session:
         destination = session.exec(select(Destination).where(Destination.id == pk)).first()
-        return templates.TemplateResponse("destination_detail.html", {"request": request, "destination": destination})
+        return templates.TemplateResponse("destination_detail.html", {"request": request, "destination": destination, "cruises": destination.cruises})
 
 
 @app.get("/cruise/{pk}")
 def cruise_detail(request: Request, pk: int):
     with Session(engine) as session:
         cruise = session.exec(select(Cruise).where(Cruise.id == pk)).first()
-        return templates.TemplateResponse("cruise_detail.html", {"request": request, "cruise": cruise})
+        return templates.TemplateResponse("cruise_detail.html", {"request": request, "cruise": cruise, "destinations": cruise.destinations})
 
 
 @app.get("/info_request/", response_class=HTMLResponse)
