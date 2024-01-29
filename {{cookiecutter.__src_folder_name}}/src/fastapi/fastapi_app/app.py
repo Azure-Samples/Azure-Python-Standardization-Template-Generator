@@ -1,6 +1,7 @@
 import os
 import pathlib
 
+from azure.monitor.opentelemetry import configure_azure_monitor
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +10,7 @@ from sqlmodel import Session, select
 
 from .models import Cruise, Destination, InfoRequest, engine
 
+configure_azure_monitor()
 app = FastAPI()
 parent_path = pathlib.Path(__file__).parent.parent
 app.mount("/mount", StaticFiles(directory=parent_path / "static"), name="static")
