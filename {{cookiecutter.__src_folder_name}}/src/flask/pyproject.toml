@@ -3,9 +3,8 @@ name = "flaskapp"
 version = "1.0.0"
 description = "{{cookiecutter.__project_short_description}}"
 dependencies = [
+    "azure-monitor-opentelemetry",
     "Flask==2.3.2",
-    "opencensus-ext-azure==1.1.9",
-    "opencensus-ext-flask==0.8.2",
     {% if 'postgres' in cookiecutter.db_resource %}
     "SQLAlchemy==2.0.17",
     "psycopg2-binary==2.9.6",
