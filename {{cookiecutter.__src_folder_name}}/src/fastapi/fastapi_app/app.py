@@ -10,7 +10,9 @@ from sqlmodel import Session, select
 
 from .models import Cruise, Destination, InfoRequest, engine
 
-configure_azure_monitor()
+if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+    configure_azure_monitor()
+
 app = FastAPI()
 parent_path = pathlib.Path(__file__).parent.parent
 app.mount("/mount", StaticFiles(directory=parent_path / "static"), name="static")
