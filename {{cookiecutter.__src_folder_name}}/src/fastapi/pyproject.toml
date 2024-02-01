@@ -3,7 +3,7 @@ name = "fastapi_app"
 version = "1.0.0"
 description = "{{cookiecutter.__project_short_description}}"
 dependencies = [
-    "azure-montitor-opentelemetry",
+    "azure-monitor-opentelemetry",
     "fastapi",
     "jinja2",
     "uvicorn[standard]",

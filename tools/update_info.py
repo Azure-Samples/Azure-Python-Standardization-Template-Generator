@@ -202,11 +202,15 @@ def update_repo(
             text=True,
             cwd=path,
         )
-        subprocess.check_output(
-            ["git", "commit", "-m", "remove cruft.json"],
-            text=True,
-            cwd=path,
-        )
+        try:
+            subprocess.check_output(
+                ["git", "commit", "-m", "remove cruft.json"],
+                text=True,
+                cwd=path,
+            )
+        except subprocess.CalledProcessError as e:
+            if f"On branch {branch}\nnothing to commit" not in e.stdout:
+                raise e
 
     else:
         cruft.update(
@@ -216,7 +220,7 @@ def update_repo(
             checkout=checkout if checkout else None,
         )
 
-    if not subprocess.check_output(
+    if subprocess.check_output(
         ["git", "status", "--porcelain"],
         text=True,
         cwd=path,
@@ -237,11 +241,16 @@ def update_repo(
             text=True,
             cwd=path,
         )
-        subprocess.check_output(
-            ["git", "commit", "-m", "Cruft Update"],
-            text=True,
-            cwd=path,
-        )
+        try:
+            subprocess.check_output(
+                ["git", "commit", "-m", "Cruft Update"],
+                text=True,
+                cwd=path,
+            )
+        except subprocess.CalledProcessError as e:
+            if f"On branch {branch}\nnothing to commit" not in e.stdout:
+                raise e
+
         logger.info(f"Pushing changes to {branch}")
         subprocess.check_output(
             ["git", "push", "--set-upstream", "origin", branch],
@@ -249,13 +258,23 @@ def update_repo(
             cwd=path,
         )
 
-        logger.info(f"Creating PR for {path}")
-        subprocess.check_output(
-            ["gh", "pr", "create", "--fill", "--reviewer", "kjaymiller,pamelafox"],
-            text=True,
-            cwd=path,
-        )
+        try:
+            logger.info(f"Creating PR for {path}")
+            subprocess.check_output(
+                ["gh", "pr", "create", "--title", "Update from Cruft", "--body","update from cruft"],
+                text=True,
+                cwd=path,
+            )
+            subprocess.check_output(
+                ["gh", "pr", "view", "--web"], 
+                text=True,
+                cwd=path,
+            )
+            
 
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Could not create PR for {path}: {e}")
+            pass
 
 @repos_app.command(name="update")
 def update_repos(
@@ -273,7 +292,7 @@ def update_repos(
         "-c",
         help="The branch to use for cruft updates `checkout` parameter.",
     )]=None,
-    submit_pr: Annotated[bool, typer.Option("--no-pr", "-P")]=False,
+    submit_pr: Annotated[bool, typer.Option("--pr", "-P")]=False,
     source: Annotated[str, typer.Option(
         "--source",
         "-s",
