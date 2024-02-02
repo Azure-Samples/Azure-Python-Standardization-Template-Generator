@@ -265,12 +265,13 @@ def update_repo(
                 text=True,
                 cwd=path,
             )
-            subprocess.check_output(
-                ["gh", "pr", "view", "--web"], 
+            pr = subprocess.check_output(
+                ["gh", "pr", "view", "--json", "url"], 
                 text=True,
                 cwd=path,
             )
-            
+
+            logging.info(f"PR Created: {pr}")
 
         except subprocess.CalledProcessError as e:
             logger.error(f"Could not create PR for {path}: {e}")
