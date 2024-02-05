@@ -51,10 +51,10 @@ def test_destination_detail(client):
 
 def test_cruise_detail(client):
     {% if "postgres" in cookiecutter.db_resource %}
-    sun_and_earth = select(models.Destination).where(models.Destination.name == "The Sun and Earth")
+    sun_and_earth = select(models.Cruise).where(models.Cruise.name == "The Sun and Earth")
     {% endif %}
     {% if "mongodb" in cookiecutter.db_resource %}
-    sun_and_earth = models.Destination.objects(name="The Sun and Earth").first() 
+    sun_and_earth = models.Cruise.objects(name="The Sun and Earth").first() 
     {% endif %}
     response = client.get(f"/cruise/{sun_and_earth.id}")
 
@@ -63,12 +63,6 @@ def test_cruise_detail(client):
 
 
 def test_info_request(client):
-    {% if "postgres" in cookiecutter.db_resource %}
-    sun_and_earth = select(models.Destination).where(models.Destination.name == "The Sun and Earth")
-    {% endif %}
-    {% if "mongodb" in cookiecutter.db_resource %}
-    sun_and_earth = models.Destination.objects(name="The Sun and Earth").first() 
-    {% endif %}
     response = client.get("/info_request")
 
     assert response.status_code == 200
@@ -77,10 +71,10 @@ def test_info_request(client):
 
 def test_create_info_request(app_with_db, client):
     {% if "postgres" in cookiecutter.db_resource %}
-    sun_and_earth = select(models.Destination).where(models.Destination.name == "The Sun and Earth")
+    sun_and_earth = select(models.Cruise).where(models.Cruise.name == "The Sun and Earth")
     {% endif %}
     {% if "mongodb" in cookiecutter.db_resource %}
-    sun_and_earth = models.Destination.objects(name="The Sun and Earth").first() 
+    sun_and_earth = models.Cruise.objects(name="The Sun and Earth").first() 
     {% endif %}
     response = client.post(
         "/info_request",
@@ -99,8 +93,13 @@ def test_create_info_request(app_with_db, client):
     )
 
     with app_with_db.app_context():
+        {% if "postgres" in cookiecutter.db_resource %}
         info_request = db.session.query(models.InfoRequest).order_by(models.InfoRequest.id.desc()).first()
+        {% endif %}
+        {% if "mongodb" in cookiecutter.db_resource %}
+        info_request = models.InfoRequest.objects(name="Amanda Valdez").first()
+        {% endif %}
         assert info_request.name == "Amanda Valdez"
         assert info_request.email == "michellewatson@gmail.com"
         assert info_request.notes == "Please send me more information."
-        assert info_request.cruise_id == sun_and_earth
+        assert info_request.cruise == sun_and_earth
