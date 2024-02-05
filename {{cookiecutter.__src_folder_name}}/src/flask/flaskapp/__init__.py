@@ -46,7 +46,7 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     {% endif %}
-    {% if 'mongodb' in cookiecutter.db_resource %}
+    {% if 'mongo' in cookiecutter.db_resource %}
     db = engine.connect(host=app.config.get("DATABASE_URI")) # noqa: F841
     {% endif %}
 
@@ -61,7 +61,6 @@ def create_app(test_config=None):
     @click.option("--filename", default="seed_data.json")
     def seed_data(filename{% if 'mongodb' in cookiecutter.db_resource %}, drop{% endif %}):
         from . import seeder
-
         {% if 'postgres' in cookiecutter.db_resource %}
         seeder.seed_data(db, filename)
         {% endif %}
