@@ -46,10 +46,6 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     {% endif %}
-    {% if 'mongodb' in cookiecutter.db_resource %}
-    db = engine.connect(host=app.config.get("DATABASE_URI")) # noqa: F841
-    {% endif %}
-
     from . import pages
 
     app.register_blueprint(pages.bp)

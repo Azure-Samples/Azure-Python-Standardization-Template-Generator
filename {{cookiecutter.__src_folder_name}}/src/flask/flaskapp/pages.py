@@ -58,7 +58,7 @@ def create_info_request():
         name=name,
         email=request.form["email"],
         notes=request.form["notes"],
-        cruise_id=request.form["cruise_id"],
+        cruise=request.form["cruise_id"],
     )
     {% if 'postgres' in cookiecutter.db_resource %}
     db.session.add(db_info_request)
