@@ -58,7 +58,12 @@ def create_info_request():
         name=name,
         email=request.form["email"],
         notes=request.form["notes"],
+        {% if 'postgres' in cookiecutter.db_resource %}
+        cruise_id=request.form["cruise_id"],
+        {% endif %}
+        {% if 'mongodb' in cookiecutter.db_resource %}
         cruise=request.form["cruise_id"],
+        {% endif %}
     )
     {% if 'postgres' in cookiecutter.db_resource %}
     db.session.add(db_info_request)

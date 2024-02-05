@@ -112,9 +112,11 @@ def update_readme():
 
     print(f"{len(list(combos))}: Total Combinations")
 
-def create_base_folder():
+def create_base_folder(base_folder=None):
     """Creates the base folder for the repo"""
-    base_path = pathlib.Path(f"update_repos/{random_cc_folder_prefix}")
+    if not base_folder:
+        base_folder = random_cc_folder_prefix
+    base_path = pathlib.Path(f"update_repos/{base_folder}")
     base_path.mkdir(parents=True, exist_ok=True)
     return base_path
     # TODO: Get repos by pattern
@@ -298,18 +300,26 @@ def update_repos(
         "-s",
         help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
     )]=None,
+    base_folder: Annotated[str, typer.Option("--base-folder")]=None,
 ) -> None:
 
     """Updates all repos that match the provided pattern or all of the repos if no pattern is provided."""
     logger.info(f"Request updates to repos matching \"{pattern}\" requested. Attrs: \n\t{branch=}\n\t{checkout=}")
-    path = create_base_folder()
     patterns = get_repos_by_pattern(pattern)
     patterns_str = '\n- '.join(patterns)
-    logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n{patterns_str}")
+    logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n- {patterns_str}")
     force = source is not None
 
     for repo in patterns:
-        update_repo(repo=repo, path=path, branch=branch, checkout=checkout, submit_pr=submit_pr, source=source, force=force)
+        update_repo(
+            repo=repo,
+            path=create_base_folder(base_folder),
+            branch=branch,
+            checkout=checkout,
+            submit_pr=submit_pr,
+            source=source,
+            force=force,
+        )
 
 if __name__ == "__main__":
     app()
