@@ -4,7 +4,7 @@ import pytest
 from flaskapp import db, models
 from sqlalchemy import select
 {% endif %}
-{% if "mongodb" in cookiecutter.db_resourec %}
+{% if "mongodb" in cookiecutter.db_resource %}
 from flaskapp import models
 {% endif %}
 
