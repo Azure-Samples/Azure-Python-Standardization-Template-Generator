@@ -10,8 +10,8 @@ param exists bool
 param identityName string
 param serviceName string = 'web'
 param keyVaultName string
-{# The dbserver values do not exist in the postgres aca add-on #}
-{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+{# The dbserver values do not exist in the aca add-on #}
+{% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
 param dbserverDomainName string
 param dbserverDatabaseName string
 param dbserverUser string
@@ -77,6 +77,26 @@ module app 'core/host/container-app-upsert.bicep' = {
       }
       {% endif %}
       {% endif %}
+      {% if 'mysql' in cookiecutter.db_resource %}
+      {% if cookiecutter.db_resource in ("mysql-flexible") %}
+      {
+        name: 'AZURE_MYSQL_HOST'
+        value: dbserverDomainName
+      }
+      {
+        name: 'AZURE_MYSQL_USER'
+        value: dbserverUser
+      }
+      {
+        name: 'AZURE_MYSQL_NAME'
+        value: dbserverDatabaseName
+      }
+      {
+        name: 'AZURE_MYSQL_PASSWORD'
+        secretRef: 'dbserver-password'
+      }
+      {% endif %}
+      {% endif %}
       {
         name: 'RUNNING_IN_PRODUCTION'
         value: 'true'
@@ -99,7 +119,7 @@ module app 'core/host/container-app-upsert.bicep' = {
       {% endif %}
       ]
     secrets: [
-        {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+        {% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
         {
           name: 'dbserver-password'
           value: dbserverPassword

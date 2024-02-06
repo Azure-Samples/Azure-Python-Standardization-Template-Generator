@@ -82,7 +82,8 @@ To request support please create a [new discussion](https://github.com/kjaymille
 - [Flask Azure Container Apps Postgres Addon  Azure Container Apps](https://github.com/Azure-Samples/azure-flask-postgres-addon-aca)
 - [Flask CosmosDB - MongoDB Adapter  Azure Container Apps](https://github.com/Azure-Samples/azure-flask-cosmos-mongodb-aca)
 - [Flask CosmosDB - MongoDB Adapter  Azure App Service](https://github.com/Azure-Samples/azure-flask-cosmos-mongodb-appservice)
-- [Flask MySQL - Flexible Server Azure App Service](https://github.com/john0isaac/azure-flask-mysql-flexible-appservice/)
+- [Flask MySQL - Flexible Server Azure App Service](https://github.com/john0isaac/azure-flask-mysql-flexible-appservice)
+- [Flask MySQL - Flexible Server Azure Container Apps](https://github.com/john0isaac/azure-flask-mysql-flexible-aca)
 
 ## Deploying your cookiecutter template
 
