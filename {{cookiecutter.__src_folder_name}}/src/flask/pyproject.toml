@@ -5,11 +5,16 @@ description = "{{cookiecutter.__project_short_description}}"
 dependencies = [
     "azure-monitor-opentelemetry",
     "Flask==2.3.2",
-    {% if 'postgres' in cookiecutter.db_resource %}
+    {% if 'postgres' in cookiecutter.db_resource or 'mysql' in  cookiecutter.db_resource%}
     "SQLAlchemy==2.0.17",
-    "psycopg2-binary==2.9.6",
     "Flask-Migrate==4.0.4",
     "Flask-SQLAlchemy==3.1.1",
+    {% endif %}
+    {% if 'postgres' in cookiecutter.db_resource%}
+    "psycopg2-binary==2.9.6",
+    {% endif %}
+    {% if 'mysql' in cookiecutter.db_resource%}
+    "mysql-connector-python==8.3.0",
     {% endif %}
     {% if 'mongodb' in cookiecutter.db_resource %}
     "mongoengine==0.27.0",
