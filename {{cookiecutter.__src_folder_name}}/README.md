@@ -20,6 +20,9 @@ products:
 {% if "postgres" in cookiecutter.db_resource %}
 - azure-postgresql
 {% endif %}
+{% if "mysql" in cookiecutter.db_resource %}
+- azure-mysql
+{% endif %}
 {% if "cosmos" in cookiecutter.db_resource %}
 - azure-cosmos-db
 {% endif %}
@@ -35,20 +38,31 @@ This project deploys a web application for a space travel agency using {{web_fra
 
 ## Opening the project
 
-This project has [Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers), so it will be setup automatically if you open it in Github Codespaces or in local VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+This project has [Dev Container support](https://code.visualstudio.com/docs/devcontainers/containers), so it will be setup automatically if you open it in GitHub Codespaces or in local VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 If you're *not* using one of those options for opening the project, then you'll need to:
 
 {% if "postgres" in cookiecutter.db_resource %}
 1. Start up a local PostgreSQL server, create a database for the app, and set the following environment variables according to your database configuration.
 
-```shell
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-export POSTGRES_DATABASE=<YOUR DATABASE>
-export POSTGRES_USERNAME=<YOUR USERNAME>
-export POSTGRES_PASSWORD=<YOUR PASSWORD>
-```
+    ```shell
+    export POSTGRES_HOST=localhost
+    export POSTGRES_PORT=5432
+    export POSTGRES_DATABASE=<YOUR DATABASE>
+    export POSTGRES_USERNAME=<YOUR USERNAME>
+    export POSTGRES_PASSWORD=<YOUR PASSWORD>
+    ```
+{% endif %}
+{% if "mysql" in cookiecutter.db_resource %}
+1. Start up a local MySQL server, create a database for the app, and set the following environment variables according to your database configuration.
+
+    ```shell
+    export MYSQL_HOST=localhost
+    export MYSQL_PORT=3306
+    export MYSQL_DATABASE=<YOUR DATABASE>
+    export MYSQL_USER=<YOUR USERNAME>
+    export MYSQL_PASS=<YOUR PASSWORD>
+    ```
 {% endif %}
 
 1. Create a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html#creating-virtual-environments) and activate it.
@@ -60,13 +74,11 @@ export POSTGRES_PASSWORD=<YOUR PASSWORD>
     ```
 
 {% if cookiecutter.project_backend in ("flask", "fastapi") %}
-
 1. Install the app as an editable package:
 
     ```sh
     python3 -m pip install -e src
     ```
-
 {% endif %}
 
 1. Apply database migrations and seed initial data:
@@ -77,7 +89,7 @@ export POSTGRES_PASSWORD=<YOUR PASSWORD>
     python3 src/manage.py loaddata src/seed_data.json
 {% endif %}
 {% if cookiecutter.project_backend == "flask" %}
-    {% if "postgres" in cookiecutter.db_resource %}
+    {% if "postgres" in cookiecutter.db_resource or "mysql" in cookiecutter.db_resource%}
     python3 -m flask --app src.flaskapp db upgrade --directory src/flaskapp/migrations
     python3 -m flask --app src.flaskapp seed --filename src/seed_data.json
     {% endif %}
@@ -169,12 +181,11 @@ Steps for deployment:
 
 ### CI/CD pipeline
 
-This project includes a Github workflow for deploying the resources to Azure
+This project includes a GitHub workflow for deploying the resources to Azure
 on every push to main. That workflow requires several Azure-related authentication secrets
-to be stored as Github action secrets. To set that up, run:
+to be stored as GitHub action secrets. To set that up, run:
 
 ```shell
 azd pipeline config
 ```
-
 {% endblock %}
