@@ -13,7 +13,7 @@
       },
       "webAppExists": {
         "value": "${SERVICE_WEB_RESOURCE_EXISTS=false}"
-      }{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %},
+      }{% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %},
       "dbserverPassword": {
         "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} DBSERVERPASSWORD)"
       }{% endif %}{% if cookiecutter.project_backend in ("django", "flask") %},
