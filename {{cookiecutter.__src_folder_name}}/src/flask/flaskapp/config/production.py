@@ -35,10 +35,10 @@ if sslmode:
 {% endif %}
 
 {% if 'mysql' in cookiecutter.db_resource %}
-dbuser = os.environ["AZURE_MYSQL_USER"]
-dbpass = os.environ["AZURE_MYSQL_PASSWORD"]
-dbhost = os.environ["AZURE_MYSQL_HOST"]
-dbname = os.environ["AZURE_MYSQL_NAME"]
+dbuser = os.environ["MYSQL_USER"]
+dbpass = os.environ["MYSQL_PASSWORD"]
+dbhost = os.environ["MYSQL_HOST"]
+dbname = os.environ["MYSQL_NAME"]
 dbport = os.environ.get("MYSQL_PORT", 3306)
 
 DATABASE_URI = f"mysql+mysqlconnector://{dbuser}:{dbpass}@{dbhost}:{dbport}/{dbname}"

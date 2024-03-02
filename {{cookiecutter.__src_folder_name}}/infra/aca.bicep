@@ -80,19 +80,19 @@ module app 'core/host/container-app-upsert.bicep' = {
       {% if 'mysql' in cookiecutter.db_resource %}
       {% if cookiecutter.db_resource in ("mysql-flexible") %}
       {
-        name: 'AZURE_MYSQL_HOST'
+        name: 'MYSQL_HOST'
         value: dbserverDomainName
       }
       {
-        name: 'AZURE_MYSQL_USER'
+        name: 'MYSQL_USER'
         value: dbserverUser
       }
       {
-        name: 'AZURE_MYSQL_NAME'
+        name: 'MYSQL_NAME'
         value: dbserverDatabaseName
       }
       {
-        name: 'AZURE_MYSQL_PASSWORD'
+        name: 'MYSQL_PASSWORD'
         secretRef: 'dbserver-password'
       }
       {% endif %}

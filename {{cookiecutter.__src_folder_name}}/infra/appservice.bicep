@@ -54,10 +54,10 @@ module web 'core/host/appservice.bicep' = {
       POSTGRES_SSL: 'require'
       {% endif %}
       {% if "mysql" in cookiecutter.db_resource %}
-      AZURE_MYSQL_HOST: dbserverDomainName
-      AZURE_MYSQL_USER: dbserverUser
-      AZURE_MYSQL_NAME: dbserverDatabaseName
-      AZURE_MYSQL_PASSWORD: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
+      MYSQL_HOST: dbserverDomainName
+      MYSQL_USER: dbserverUser
+      MYSQL_NAME: dbserverDatabaseName
+      MYSQL_PASSWORD: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
       {% endif %}
       {% if cookiecutter.project_backend in ("django", "flask") %}
       SECRET_KEY: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=SECRETKEY)'
