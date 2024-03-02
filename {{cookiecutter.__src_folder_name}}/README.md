@@ -79,8 +79,8 @@ If you're *not* using one of those options for opening the project, then you'll 
     ```sh
     python3 -m pip install -e src
     ```
-{% endif %}
 
+{% endif %}
 1. Apply database migrations and seed initial data:
 
     ```sh
@@ -125,13 +125,13 @@ This app comes with the built-in Django admin interface.
 
 1. Create a superuser:
 
-```
-python3 src/manage.py createsuperuser
-```
+    ```sh
+    python3 src/manage.py createsuperuser
+    ```
 
-2. Restart the server and navigate to "/admin"
+1. Restart the server and navigate to "/admin"
 
-3. Login with the superuser credentials.
+1. Login with the superuser credentials.
 {% endif %}
 
 ## Running tests
