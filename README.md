@@ -40,7 +40,7 @@ https://github.com/kjaymiller/cookiecutter-relecloud/assets/8632637/872a41ad-a48
 |Azure Cosmos DB (Postgres Adapter)|✅|✅|✅|
 |Azure Cosmos DB (MongoDB)|❌|❌|✅|
 |Azure Postgres Flexible Server|✅|✅|✅|
-|Azure MySQL Flexible Server|❌|❌|✅|
+|Azure MySQL Flexible Server|✅|🛠️|✅|
 |**Azure Add-ons**|-|-|-|
 |Azure vNet|❌|❌|❌|
 |Azure Secret KeyVault|✅|✅|✅|
@@ -60,6 +60,8 @@ To request support please create a [new discussion](https://github.com/kjaymille
 - [Django CosmosDB Postgres Adapter Azure Container Apps](https://github.com/Azure-Samples/azure-django-cosmos-postgres-aca)
 - [Django CosmosDB Postgres Adapter Azure App Service](https://github.com/Azure-Samples/azure-django-cosmos-postgres-appservice)
 - [Django Azure Container Apps Postgres Addon  Azure Container Apps](https://github.com/Azure-Samples/azure-django-postgres-addon-aca)
+- [Django MySQL - Flexible Server Azure App Service](https://github.com/john0isaac/azure-django-mysql-flexible-appservice)
+- [Django MySQL - Flexible Server Azure Container Apps](https://github.com/john0isaac/azure-django-mysql-flexible-aca)
 
 #### FastAPI
 
