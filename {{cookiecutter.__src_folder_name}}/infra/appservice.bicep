@@ -57,7 +57,7 @@ module web 'core/host/appservice.bicep' = {
       MYSQL_HOST: dbserverDomainName
       MYSQL_USER: dbserverUser
       MYSQL_NAME: dbserverDatabaseName
-      MYSQL_PASSWORD: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
+      MYSQL_PASS: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
       {% endif %}
       {% if cookiecutter.project_backend in ("django", "flask") %}
       SECRET_KEY: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=SECRETKEY)'

@@ -92,7 +92,7 @@ module app 'core/host/container-app-upsert.bicep' = {
         value: dbserverDatabaseName
       }
       {
-        name: 'MYSQL_PASSWORD'
+        name: 'MYSQL_PASS'
         secretRef: 'dbserver-password'
       }
       {% endif %}

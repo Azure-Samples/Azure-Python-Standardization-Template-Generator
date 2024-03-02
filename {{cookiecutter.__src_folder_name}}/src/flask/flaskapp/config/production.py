@@ -36,7 +36,7 @@ if sslmode:
 
 {% if 'mysql' in cookiecutter.db_resource %}
 dbuser = os.environ["MYSQL_USER"]
-dbpass = os.environ["MYSQL_PASSWORD"]
+dbpass = os.environ["MYSQL_PASS"]
 dbhost = os.environ["MYSQL_HOST"]
 dbname = os.environ["MYSQL_NAME"]
 dbport = os.environ.get("MYSQL_PORT", 3306)
