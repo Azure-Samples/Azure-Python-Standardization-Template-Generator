@@ -58,6 +58,7 @@ def remove_aca_files() -> None:
     """Removes unneeded files if aca is not selected"""
     file_names = (
         "src/Dockerfile",
+        "src/.dockerignore"
     )
 
     for file_name in file_names:
