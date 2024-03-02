@@ -8,6 +8,11 @@
 {% set db_port_label = "PostgreSQL Port" %}
 {% set db = "PostgreSQL" %}
 {% endif %}
+{% if 'mysql' in cookiecutter.db_resource %}
+{% set db_port = "3306" %}
+{% set db_port_label = "MySQL Port" %}
+{% set db = "MySQL" %}
+{% endif %}
 {% if cookiecutter.project_backend == "fastapi" %}
 {% set web_framework = "FastAPI" %}
 {% if 'postgres' in cookiecutter.db_resource %}

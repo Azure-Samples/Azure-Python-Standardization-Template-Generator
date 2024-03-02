@@ -1,8 +1,10 @@
+{% extends "abbreviations.txt" %}
+{% block cc %}
 """
-Models for PostgreSQL
+Models for {{ db }}
 
 {#
-The postgres model definitions. If a 'postgres' option is selected,
+The sql model definitions. If a 'postgres' or 'mysql' option is selected,
 this will be moved to `src/models.py`.
 #}
 """
@@ -52,3 +54,5 @@ class InfoRequest(db.Model):
     email: Mapped[str] = mapped_column(String(255))
     notes: Mapped[str] = mapped_column(String(255))
     cruise_id: Mapped[int] = mapped_column(ForeignKey("cruise.id"))
+
+{% endblock %}

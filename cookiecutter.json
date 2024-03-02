@@ -2,7 +2,7 @@
   "project_name": "azure",
   "python_version": ["3.12", "3.11", "3.10", "3.9", "3.8"],
   "project_backend": ["django", "fastapi", "flask"],
-  "db_resource": ["postgres-flexible", "cosmos-postgres", "postgres-addon", "cosmos-mongodb"],
+  "db_resource": ["postgres-flexible", "mysql-flexible","cosmos-postgres", "postgres-addon", "cosmos-mongodb"],
   "project_host": ["aca", "appservice"],
   "web_port": "8000",
   "__repo_name": "{{cookiecutter.project_name}}-{{cookiecutter.project_backend}}-{{cookiecutter.db_resource}}-{{cookiecutter.project_host}}",
@@ -31,6 +31,7 @@
     "db_resource": {
       "__prompt__": "Choose a Database and Host Framework",
       "postgres-flexible": "Postgres - Flexible Server",
+      "mysql-flexible": "MySQL - Flexible Server",
       "cosmos-postgres": "CosmosDB Postgres Adapter",
       "postgres-addon": "Azure Container Apps Postgres Addon [red]Requires ACA[/red]",
       "cosmos-mongodb": "CosmosDB - MongoDB Adapter [red]Flask/FastAPI Only[/red]"

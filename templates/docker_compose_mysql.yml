@@ -1,0 +1,29 @@
+{# db layer configurations #}
+{# with the indentation you need to ensure the first row is level with the macro
+subsequent rows are at the expected level of the parent file#}
+{% macro db() %}
+image: mysql:latest
+
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: relecloud
+
+    restart: unless-stopped
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{% endmacro %}
+
+{% macro app_environment() %}
+environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASS: mysql
+      MYSQL_DATABASE: relecloud
+{% endmacro%}
