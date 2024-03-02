@@ -57,7 +57,7 @@ If you're *not* using one of those options for opening the project, then you'll 
 1. Start up a local MySQL server, create a database for the app, and set the following environment variables according to your database configuration.
 
     ```shell
-    export MYSQL_HOST=localhost
+    export MYSQL_HOST=127.0.0.1
     export MYSQL_PORT=3306
     export MYSQL_DATABASE=<YOUR DATABASE>
     export MYSQL_USER=<YOUR USERNAME>

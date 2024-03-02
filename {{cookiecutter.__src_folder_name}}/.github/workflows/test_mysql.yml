@@ -67,14 +67,14 @@ jobs:
             python3 src/fastapi_app/seed_data.py
             {% endif %}
           env:
-            MYSQL_HOST: localhost
+            MYSQL_HOST: 127.0.0.1
             MYSQL_USER: root
             MYSQL_PASS: mysql
             MYSQL_DATABASE: relecloud
         - name: Run tests 
           run: python3 -m pytest
           env:
-            MYSQL_HOST: localhost
+            MYSQL_HOST: 127.0.0.1
             MYSQL_USER: root
             MYSQL_PASS: mysql
             MYSQL_DATABASE: relecloud
