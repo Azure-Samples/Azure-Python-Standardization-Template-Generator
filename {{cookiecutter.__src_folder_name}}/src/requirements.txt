@@ -15,6 +15,6 @@ azure-monitor-opentelemetry
 psycopg2
 {% endif %}
 {% if 'mysql' in cookiecutter.db_resource %}
-mysql-connector-python
+mysqlclient
 {% endif %}
 {% endif %}
