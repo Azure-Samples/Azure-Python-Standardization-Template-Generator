@@ -92,6 +92,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+{% if 'postgres' in cookiecutter.db_resource %}
 db_options = {}
 {% if cookiecutter.db_resource == "postgres-addon" %}
 # The PostgreSQL service binding will typically set POSTGRES_SSL to disable.
@@ -113,6 +114,22 @@ DATABASES = {
         "OPTIONS": db_options,
     }
 }
+{% endif %}
+{% if 'mysql' in cookiecutter.db_resource %}
+db_options = {"ssl_mode": "REQUIRED"}
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.environ.get("MYSQL_DATABASE"),
+        "USER": os.environ.get("MYSQL_USER"),
+        "PASSWORD": os.environ.get("MYSQL_PASS"),
+        "HOST": os.environ.get("MYSQL_HOST"),
+        "PORT": os.environ.get("MYSQL_PORT", 3306),
+        "OPTIONS": db_options,
+    }
+}
+{% endif %}
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
