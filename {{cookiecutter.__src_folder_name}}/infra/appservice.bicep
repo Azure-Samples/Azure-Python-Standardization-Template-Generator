@@ -6,7 +6,7 @@ param pythonVersion string
 param appCommandLine string
 param keyVaultName string
 param applicationInsightsName string
-{% if "postgres" in cookiecutter.db_resource %}
+{% if "postgres" in cookiecutter.db_resource or "mysql" in cookiecutter.db_resource %}
 param dbserverDomainName string
 param dbserverUser string
 param dbserverDatabaseName string
@@ -52,6 +52,13 @@ module web 'core/host/appservice.bicep' = {
       POSTGRES_DATABASE: dbserverDatabaseName
       POSTGRES_PASSWORD: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
       POSTGRES_SSL: 'require'
+      {% endif %}
+      {% if "mysql" in cookiecutter.db_resource %}
+      MYSQL_HOST: dbserverDomainName
+      MYSQL_USER: dbserverUser
+      MYSQL_DATABASE: dbserverDatabaseName
+      MYSQL_PASS: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=DBSERVERPASSWORD)'
+      MYSQL_SSL: 'REQUIRED'
       {% endif %}
       {% if cookiecutter.project_backend in ("django", "flask") %}
       SECRET_KEY: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=SECRETKEY)'

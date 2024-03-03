@@ -50,10 +50,12 @@ def load_from_json():
 
 
 def drop_all():
+    # Establish a new connection to the database in case it closed
+    engine = models.create_engine(models.sql_url)
     # Explicitly remove these tables first to avoid cascade errors
     SQLModel.metadata.remove(models.Cruise.__table__)
     SQLModel.metadata.remove(models.Destination.__table__)
-    SQLModel.metadata.drop_all(models.engine)
+    SQLModel.metadata.drop_all(engine)
 
 
 if __name__ == "__main__":
