@@ -72,6 +72,8 @@ To request support please create a [new discussion](https://github.com/kjaymille
 - [FastAPI CosmosDB Postgres Adapter Azure Container Apps](https://github.com/Azure-Samples/azure-fastapi-cosmos-postgres-aca)
 - [FastAPI CosmosDB Postgres Adapter Azure App Service](https://github.com/Azure-Samples/azure-fastapi-cosmos-postgres-appservice)
 - [FastAPI Azure Container Apps Postgres Addon  Azure Container Apps](https://github.com/Azure-Samples/azure-fastapi-postgres-addon-aca)
+- [FastAPI MySQL - Flexible Server Azure App Service](https://github.com/john0isaac/azure-fastapi-mysql-flexible-appservice)
+- [FastAPI MySQL - Flexible Server Azure Container Apps](https://github.com/john0isaac/azure-fastapi-mysql-flexible-aca)
 
 #### Flask
 
