@@ -2,6 +2,7 @@ import pytest
 import itertools
 
 postgres_db_resources = ["postgres-flexible", "cosmos-postgres", "postgres-addon"]
+mysql_db_resources = ["mysql-flexible"]
 mongo_db_resources = ["cosmos-mongodb"]
 
 web_frameworks = [
@@ -9,7 +10,7 @@ web_frameworks = [
     "flask",
     "fastapi",
 ]
-db_resources = postgres_db_resources # + mongo_db_resources
+db_resources = postgres_db_resources + mysql_db_resources # + mongo_db_resources
 
 
 # Creates the context override for the parametrized test
@@ -23,6 +24,7 @@ def default_context():
         "project_backend": ["django", "fastapi", "flask"],
         "db_resource": [
             "postgres-flexible",
+            "mysql-flexible",
             "cosmos-postgres",
             "postgres-addon",
             "cosmos-mongodb",

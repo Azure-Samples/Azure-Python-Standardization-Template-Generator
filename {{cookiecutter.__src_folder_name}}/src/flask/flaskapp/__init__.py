@@ -6,14 +6,14 @@ from azure.monitor.opentelemetry import configure_azure_monitor
 import mongoengine as engine
 {% endif %}
 from flask import Flask
-{% if 'postgres' in cookiecutter.db_resource %}
+{% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 {% endif %}
 
 
-{% if 'postgres' in cookiecutter.db_resource %}
+{% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
 class BaseModel(DeclarativeBase):
     pass
 
@@ -40,7 +40,7 @@ def create_app(test_config=None):
     if test_config is not None:
         app.config.update(test_config)
 
-    {% if 'postgres' in cookiecutter.db_resource %}
+    {% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
     app.config.update(SQLALCHEMY_DATABASE_URI=app.config.get("DATABASE_URI"), SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
     db.init_app(app)
@@ -61,7 +61,7 @@ def create_app(test_config=None):
     @click.option("--filename", default="seed_data.json")
     def seed_data(filename{% if 'mongodb' in cookiecutter.db_resource %}, drop{% endif %}):
         from . import seeder
-        {% if 'postgres' in cookiecutter.db_resource %}
+        {% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
         seeder.seed_data(db, filename)
         {% endif %}
         {% if 'mongodb' in cookiecutter.db_resource %}

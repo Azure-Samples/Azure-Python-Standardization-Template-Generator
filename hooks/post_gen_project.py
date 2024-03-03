@@ -12,22 +12,31 @@ def move_db_files(db_resource: str):
     Delete the remaining files in the db folder and the db folder itself
     """
 
-    if "postgres" in db_resource:
-        logging.debug("Postgres selected. Renaming postgres files")
+    if "postgres" in db_resource or "mysql" in db_resource:
+        logging.debug("{{ cookiecutter.db_resource }} selected. Renaming {{ cookiecutter.db_resource }} files")
         shutil.move(
-            "src/db/postgres_models.py",
+            "src/db/sql_db_models.py",
             "src/flask/flaskapp/models.py"
         )
         shutil.move(
-            "src/db/postgres_seeder.py",
+            "src/db/sql_db_seeder.py",
             "src/flask/flaskapp/seeder.py",
         )
-        shutil.move(
-            ".github/workflows/test_postgres.yml",
-            ".github/workflows/tests.yml"
-        )
+        if "postgres" in db_resource:
+            shutil.move(
+                ".github/workflows/test_postgres.yml",
+                ".github/workflows/tests.yml"
+            )
+            pathlib.Path(".github/workflows/test_mysql.yml").unlink()
+        if "mysql" in db_resource:
+            shutil.move(
+                ".github/workflows/test_mysql.yml",
+                ".github/workflows/tests.yml"
+            )
+            pathlib.Path(".github/workflows/test_postgres.yml").unlink()
     else:
         pathlib.Path(".github/workflows/test_postgres.yml").unlink()
+        pathlib.Path(".github/workflows/test_mysql.yml").unlink()
 
     if "mongo" in db_resource:
         logging.debug("MongoDB selected. Renaming MongoDB files")
@@ -49,6 +58,7 @@ def remove_aca_files() -> None:
     """Removes unneeded files if aca is not selected"""
     file_names = (
         "src/Dockerfile",
+        "src/.dockerignore"
     )
 
     for file_name in file_names:
@@ -56,7 +66,7 @@ def remove_aca_files() -> None:
 
 def remove_flask_migration_files() -> None:
     """
-    Removes the flask migration files if postgres is not selected
+    Removes the flask migration files if postgres or mysql is not selected
     This only applies to flask projects
     """
     if "{{ cookiecutter.project_backend }}" == "flask" and "mongo" in "{{cookiecutter.db_resource }}":

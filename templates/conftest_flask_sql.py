@@ -27,7 +27,10 @@ def app_with_db():
     yield app
 
     for key, engine, connection, transaction in engine_cleanup:
-        transaction.rollback()
-        connection.close()
+        try:
+            transaction.rollback()
+            connection.close()
+        except Exception:
+            connection.close()
         engines[key] = engine
 {% endmacro %}

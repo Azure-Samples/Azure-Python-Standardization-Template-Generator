@@ -2,7 +2,9 @@
 line-length = 120
 select = ["E", "F", "I", "UP"]
 ignore = ["D203"]
+{% if cookiecutter.project_backend == "flask" %}
 extend-exclude = ["src/flaskapp/migrations/"]
+{% endif %}
 
 [tool.ruff.isort]
 {% if cookiecutter.project_backend == "flask" %}

@@ -34,6 +34,16 @@ if sslmode:
     DATABASE_URI = f"{DATABASE_URI}?sslmode={sslmode}"
 {% endif %}
 
+{% if 'mysql' in cookiecutter.db_resource %}
+dbuser = os.environ["MYSQL_USER"]
+dbpass = os.environ["MYSQL_PASS"]
+dbhost = os.environ["MYSQL_HOST"]
+dbname = os.environ["MYSQL_DATABASE"]
+dbport = os.environ.get("MYSQL_PORT", 3306)
+
+DATABASE_URI = f"mysql+mysqlconnector://{dbuser}:{dbpass}@{dbhost}:{dbport}/{dbname}"
+{% endif %}
+
 {% if 'mongo' in cookiecutter.db_resource %}
 DATABASE_URI  = os.environ["AZURE_COSMOS_CONNECTION_STRING"]
 {% endif %}
