@@ -3,8 +3,9 @@
 import os
 import typing
 
-from sqlmodel import Field, Relationship, SQLModel, create_engine
+from sqlmodel import Column, Field, Relationship, SQLModel, String, create_engine
 
+{% if "postgres" in cookiecutter.db_resource %}
 {% if cookiecutter.db_resource == "postgres-addon" %}
 # The PostgreSQL service binding will always set env variables with these names.
 {% endif %}
@@ -21,6 +22,19 @@ sql_url = f"postgresql://{POSTGRES_USERNAME}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}
 {% endif %}
 if POSTGRES_SSL:
     sql_url = f"{sql_url}?sslmode={POSTGRES_SSL}"
+{% endif %}
+{% if "mysql" in cookiecutter.db_resource %}
+MYSQL_USER = os.environ.get("MYSQL_USER")
+MYSQL_PASS = os.environ.get("MYSQL_PASS")
+MYSQL_HOST = os.environ.get("MYSQL_HOST")
+MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE")
+MYSQL_PORT = os.environ.get("MYSQL_PORT", 3306)
+MYSQL_SSL = os.environ.get("MYSQL_SSL")
+
+sql_url = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASS}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+if MYSQL_SSL:
+    sql_url = f"{sql_url}?ssl_mode={MYSQL_SSL}"
+{% endif %}
 
 engine = create_engine(sql_url)
 
@@ -46,7 +60,7 @@ class Destination(SQLModel, table=True):
     id: typing.Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     subtitle: typing.Optional[str]
-    description: typing.Optional[str]
+    description: typing.Optional[str] = Field(sa_column=Column(String(1000)))
     cruises: typing.List["Cruise"] = Relationship(
         back_populates="destinations",
         link_model=CruiseDestinationLink,
@@ -59,7 +73,7 @@ class Destination(SQLModel, table=True):
 class Cruise(SQLModel, table=True):
     id: typing.Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True)
-    description: typing.Optional[str]
+    description: typing.Optional[str] = Field(sa_column=Column(String(1000)))
     subtitle: typing.Optional[str]
     destinations: typing.List["Destination"] = Relationship(
         back_populates="cruises",

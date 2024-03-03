@@ -8,7 +8,12 @@ dependencies = [
     "jinja2",
     "uvicorn[standard]",
     "python-multipart",
-    "psycopg2",
+    {% if 'postgres' in cookiecutter.db_resource%}
+    "psycopg2-binary",
+    {% endif %}
+    {% if 'mysql' in cookiecutter.db_resource%}
+    "mysql-connector-python",
+    {% endif %}
     "sqlmodel",
 ]
 
