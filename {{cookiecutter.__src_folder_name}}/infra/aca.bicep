@@ -95,6 +95,10 @@ module app 'core/host/container-app-upsert.bicep' = {
         name: 'MYSQL_PASS'
         secretRef: 'dbserver-password'
       }
+      {
+        name: 'MYSQL_SSL'
+        value: 'REQUIRED'
+      }
       {% endif %}
       {% endif %}
       {
