@@ -15,7 +15,7 @@
     "workspaceFolder": "/workspace",
     "forwardPorts": [{{cookiecutter.web_port}}, {{db_port}}],
     "portsAttributes": {
-        "{{cookiecutter.web_port}}": {"label": "frontend web port", "onAutoForward": "notify"},
+        "{{cookiecutter.web_port}}": {"label": "Web port", "onAutoForward": "notify"},
         "{{db_port}}": {"label": "{{db_port_label}}", "onAutoForward": "silent"}
     },
     "customizations": {
@@ -61,7 +61,7 @@
     "postCreateCommand": "playwright install chromium --with-deps && python src/manage.py migrate && python src/manage.py loaddata src/seed_data.json"
     {% endif %}
     {% if cookiecutter.project_backend == "flask" %}
-    {% if 'postgres' in cookiecutter.db_resource %}
+    {% if "postgres" in cookiecutter.db_resource or "mysql" in cookiecutter.db_resource%}
     "postCreateCommand": "playwright install chromium --with-deps && pip install -e src && python3 -m flask --app src/flaskapp db upgrade --directory src/flaskapp/migrations && python3 -m flask --app src/flaskapp seed --filename src/seed_data.json"
     {% else %}
     "postCreateCommand": "playwright install chromium --with-deps && pip install -e src && python3 -m flask --app src/flaskapp seed --filename src/seed_data.json --drop"
@@ -71,5 +71,4 @@
     "postCreateCommand": "playwright install chromium --with-deps && pip install -e src &&  python3 src/fastapi_app/seed_data.py"
     {% endif %}
 }
-
 {% endblock %}
