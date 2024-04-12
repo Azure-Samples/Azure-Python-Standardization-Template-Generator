@@ -130,7 +130,9 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
       } : { enabled: false }
       secrets: [for secret in items(secrets): {
         name: secret.key
-        value: secret.value
+        value: secret.value.value
+        keyVaultUrl: secret.value.keyVault
+        identity: secret.value.identity
       }]
       service: !empty(serviceType) ? { type: serviceType } : null
       registries: usePrivateRegistry ? [
