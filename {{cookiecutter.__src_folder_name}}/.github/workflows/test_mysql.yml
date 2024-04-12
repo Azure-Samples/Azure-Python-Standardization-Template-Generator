@@ -1,0 +1,80 @@
+name: Run Python E2E tests
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'lab/**'
+      - 'assets/**'
+
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'lab/**'
+      - 'assets/**'
+
+jobs:
+  test_package:
+    {% raw %}
+    name: Test ${{ matrix.os }} Python ${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
+    {% endraw %}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python_version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    services:
+      db:
+        image: mysql:8.2
+        env:
+          MYSQL_ROOT_PASSWORD: mysql
+          MYSQL_DATABASE: relecloud
+        ports:
+        - 3306:3306
+        # needed because the mysql container does not provide a healthcheck
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+        - uses: actions/checkout@v3
+        - name: Setup python
+          uses: actions/setup-python@v2
+          with:
+            {% raw %}
+            python-version: ${{ matrix.python_version }}
+            {% endraw %}
+            architecture: x64
+        - name: Install dependencies
+          run: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install -r requirements-dev.txt
+            playwright install chromium --with-deps
+            {% if cookiecutter.project_backend in ("flask", "fastapi") %}
+            python3 -m pip install -e src
+            {% endif %}
+        - name: Seed data
+          run: |
+            {% if cookiecutter.project_backend == "django" %}
+            python3 src/manage.py migrate
+            python3 src/manage.py loaddata src/seed_data.json
+            {% endif %}
+            {% if cookiecutter.project_backend == "flask" %}
+            python3 -m flask --app src.flaskapp db upgrade --directory src/flaskapp/migrations
+            python3 -m flask --app src.flaskapp seed --filename src/seed_data.json
+            {% endif %}
+            {% if cookiecutter.project_backend == "fastapi" %}
+            python3 src/fastapi_app/seed_data.py
+            {% endif %}
+          env:
+            MYSQL_HOST: 127.0.0.1
+            MYSQL_USER: root
+            MYSQL_PASS: mysql
+            MYSQL_DATABASE: relecloud
+        - name: Run tests 
+          run: python3 -m pytest
+          env:
+            MYSQL_HOST: 127.0.0.1
+            MYSQL_USER: root
+            MYSQL_PASS: mysql
+            MYSQL_DATABASE: relecloud

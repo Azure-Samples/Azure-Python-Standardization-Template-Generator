@@ -10,11 +10,11 @@ param prefix string
 {% if cookiecutter.db_resource == "cosmos-postgres" %}
 // value is read-only in cosmos
 var dbserverUser = 'citus'
-{% elif cookiecutter.db_resource == "postgres-flexible" %}
+{% elif cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible") %}
 var dbserverUser = 'admin${uniqueString(resourceGroup().id)}'
 {% endif %}
 {# Create the dbserverPassword this is only required for postgres instances #}
-{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+{% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
 @secure()
 param dbserverPassword string
 {% endif %}
@@ -68,6 +68,29 @@ module dbserver 'core/database/postgresql/flexibleserver.bicep' = {
   }
 }
 {% endif %}
+{# MySQL Flexible Server #}
+{% if cookiecutter.db_resource == "mysql-flexible" %}
+module dbserver 'core/database/mysql/flexibleserver.bicep' = {
+  name: name
+  params: {
+    name: '${prefix}-mysql'
+    location: location
+    tags: tags
+    sku: {
+      name: 'Standard_B1ms'
+      tier: 'Burstable'
+    }
+    storage: {
+      storageSizeGB: 20
+    }
+    version: '8.0.21'
+    administratorLogin: dbserverUser
+    administratorLoginPassword: dbserverPassword
+    databaseNames: [ dbserverDatabaseName ]
+    allowAzureIPsFirewall: true
+  }
+}
+{% endif %}
 {# Cosmos PostgreSQL#}
 {% if cookiecutter.db_resource == "cosmos-postgres" %}
 module dbserver 'core/database/cosmos/cosmos-pg-adapter.bicep' = {
@@ -105,13 +128,13 @@ module dbserver 'core/database/cosmos/mongo/cosmos-mongo-db.bicep' = {
 
 {% if cookiecutter.db_resource != "postgres-addon" %}
 output dbserverDatabaseName string = dbserverDatabaseName
-{% if "postgres" in cookiecutter.db_resource %}
+{% if "postgres" in cookiecutter.db_resource or "mysql" in  cookiecutter.db_resource %}
 output dbserverUser string = dbserverUser
 {% endif %}
 {% endif %}
 {% if cookiecutter.db_resource == "postgres-addon" %}
 output dbserverID string = dbserver.outputs.id
 {% endif %}
-{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+{% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
 output dbserverDomainName string = dbserver.outputs.domainName
 {% endif %}

@@ -1,7 +1,7 @@
 {% from 'pages_macros.py' import get_all, get_one with context %}
 from flask import Blueprint, redirect, render_template, request, url_for
 
-{% if 'postgres' in cookiecutter.db_resource %}
+{% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource %}
 from . import db
 {% endif %}
 from . import models
@@ -58,14 +58,14 @@ def create_info_request():
         name=name,
         email=request.form["email"],
         notes=request.form["notes"],
-        {% if 'postgres' in cookiecutter.db_resource %}
+        {% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
         cruise_id=request.form["cruise_id"],
         {% endif %}
         {% if 'mongodb' in cookiecutter.db_resource %}
         cruise=request.form["cruise_id"],
         {% endif %}
     )
-    {% if 'postgres' in cookiecutter.db_resource %}
+    {% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource%}
     db.session.add(db_info_request)
     db.session.commit()
     {% endif %}

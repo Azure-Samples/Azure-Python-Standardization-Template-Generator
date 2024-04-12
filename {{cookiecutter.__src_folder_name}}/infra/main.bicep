@@ -9,7 +9,7 @@ param name string
 @description('Primary location for all resources')
 param location string
 
-{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+{% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible","cosmos-postgres") %}
 @secure()
 @description('DBServer administrator password')
 param dbserverPassword string
@@ -64,7 +64,7 @@ module db 'db.bicep' = {
     {% if cookiecutter.db_resource != "postgres-addon" %}
     dbserverDatabaseName: 'relecloud'
     {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres")%}
+    {% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres")%}
     dbserverPassword: dbserverPassword
     {% endif %}
     {% if cookiecutter.db_resource == "postgres-addon" %}
@@ -127,7 +127,7 @@ module web 'web.bicep' = {
     containerRegistryName: containerApps.outputs.registryName
     exists: webAppExists
     {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+    {% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
     dbserverDomainName: db.outputs.dbserverDomainName
     dbserverUser: db.outputs.dbserverUser
     dbserverDatabaseName: db.outputs.dbserverDatabaseName
@@ -145,7 +145,7 @@ module web 'web.bicep' = {
 
 
 var secrets = [
-  {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+  {% if cookiecutter.db_resource in ("postgres-flexible", "mysql-flexible", "cosmos-postgres") %}
   {
     name: 'DBSERVERPASSWORD'
     value: dbserverPassword

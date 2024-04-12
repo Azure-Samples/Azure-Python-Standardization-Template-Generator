@@ -40,7 +40,7 @@ from fastapi_app.app import app
 {% endif %}
 {% if cookiecutter.project_backend == "flask" %}
 from flaskapp import create_app, seeder
-{% if 'postgres' in cookiecutter.db_resource %}
+{% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource %}
 from flaskapp import db
 {% endif %}
 {% endif %}
@@ -79,8 +79,8 @@ def run_server(app: Flask, port: int):
     app.run(port=port, debug=False)
 
 
-{% if 'postgres' in cookiecutter.db_resource %}
-{% from 'conftest_flask_postgres.py' import app with context %}
+{% if 'postgres' in cookiecutter.db_resource or 'mysql' in cookiecutter.db_resource %}
+{% from 'conftest_flask_sql.py' import app with context %}
 {% endif %}
 {% if 'mongodb' in cookiecutter.db_resource %}
 {% from 'conftest_flask_mongodb.py' import app with context %}

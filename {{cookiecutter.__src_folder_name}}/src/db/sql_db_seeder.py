@@ -1,7 +1,9 @@
+{% extends "abbreviations.txt" %}
+{% block cc %}
 """
-Seeder module for the PostgreSQL database.
+Seeder module for the {{ db }} database.
 {#
-The postgres seeder module. If 'postgres' is selected,
+The sql seeder module. If 'postgres' or 'mysql' is selected,
 this will be moved to  `src/flask/flaskapp/seeder.py`.
 #}
 """
@@ -48,3 +50,5 @@ def seed_data(db, filename:str) -> None:
                     session.add(cruise)
                     session.commit()
                     session.refresh(cruise)
+
+{% endblock %}
