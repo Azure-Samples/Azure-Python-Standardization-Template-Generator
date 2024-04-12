@@ -98,11 +98,10 @@ module app 'core/host/container-app-upsert.bicep' = {
       }
       {% endif %}
       ]
-    secrets: [
+    secrets: {
         {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
         {
-          name: 'dbserver-password'
-          value: dbserverPassword
+          'dbserver-password': dbserverPassword
         }
         {% endif %}
         {% if cookiecutter.project_backend in ("django", "flask") %}
@@ -119,7 +118,7 @@ module app 'core/host/container-app-upsert.bicep' = {
           identity: webIdentity.id
         }
         {% endif %}
-      ]
+     }
     {% if cookiecutter.db_resource == "postgres-addon" %}
     postgresServiceId: postgresServiceId
     {% endif %}
