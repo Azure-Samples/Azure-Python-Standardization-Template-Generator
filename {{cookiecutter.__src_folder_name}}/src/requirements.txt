@@ -1,5 +1,5 @@
 # global requirements
-gunicorn==20.1.0
+gunicorn==22.0.0
 {% if cookiecutter.project_backend == "fastapi" %}
 uvicorn==0.23.2
 {% endif %}
