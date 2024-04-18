@@ -64,7 +64,7 @@ def tests_valid_bicep(bakery):
         )
     )
     result = subprocess.run(commands, capture_output=True, text=True)
-    assert result.returncode == 0
+    assert result.returncode == 0, result.stderr
 
 @pytest.mark.skip(reason="not implmented yet")
 def tests_mongo_builds_use_mongo_db_vars(bakery, default_context):

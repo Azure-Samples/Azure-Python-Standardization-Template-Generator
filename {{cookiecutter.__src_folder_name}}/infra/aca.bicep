@@ -98,28 +98,25 @@ module app 'core/host/container-app-upsert.bicep' = {
       }
       {% endif %}
       ]
-    secrets: [
+    secrets: {
         {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
-        {
-          name: 'dbserver-password'
-          value: dbserverPassword
-        }
+          'dbserver-password': dbserverPassword
         {% endif %}
-        {% if cookiecutter.project_backend in ("django", "flask") %}
-        {
-          name: 'secret-key'
-          keyVaultUrl: '${keyVault.properties.vaultUri}secrets/SECRETKEY'
-          identity: webIdentity.id
-        }
-        {% endif %}
-        {% if "mongodb" in cookiecutter.db_resource %}
-        {
-          name: 'azure-cosmos-connection-string'
+     }
+    keyvaultIdentities: {
+      {% if cookiecutter.project_backend in ("django", "flask") %}
+      'secret-key': {
+        keyVaultUrl: '${keyVault.properties.vaultUri}secrets/SECRETKEY'
+        identity: webIdentity.id
+      }
+      {% endif %}
+      {% if "mongodb" in cookiecutter.db_resource %}
+        'azure-cosmos-connection-string': {
           keyVaultUrl: '${keyVault.properties.vaultUri}secrets/AZURE-COSMOS-CONNECTION-STRING'
           identity: webIdentity.id
         }
-        {% endif %}
-      ]
+      {% endif %}
+    }
     {% if cookiecutter.db_resource == "postgres-addon" %}
     postgresServiceId: postgresServiceId
     {% endif %}
