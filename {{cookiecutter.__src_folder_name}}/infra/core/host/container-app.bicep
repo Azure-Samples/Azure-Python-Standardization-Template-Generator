@@ -70,6 +70,10 @@ param revisionMode string = 'Single'
 @secure()
 param secrets object = {}
 
+@description('The keyvault identities required for the container')
+@secure()
+param keyvaultIdentities object = {}
+
 @description('The service binds associated with the container')
 param serviceBinds array = []
 
@@ -128,10 +132,12 @@ resource app 'Microsoft.App/containerApps@2023-05-02-preview' = {
         appProtocol: daprAppProtocol
         appPort: ingressEnabled ? targetPort : 0
       } : { enabled: false }
-      secrets: [for secret in items(secrets): {
+      secrets: concat([for secret in items(secrets): {
         name: secret.key
-        value: secret.value.value
-        keyVaultUrl: secret.value.keyVault
+        value: secret.value
+      }] , [for secret in items(keyvaultIdentities): {
+        name: secret.key
+        keyVaultUrl: secret.value.keyVaultUrl
         identity: secret.value.identity
       }]
       service: !empty(serviceType) ? { type: serviceType } : null
