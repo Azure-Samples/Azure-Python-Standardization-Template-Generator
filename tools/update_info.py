@@ -222,7 +222,7 @@ def update_repo(
             checkout=checkout if checkout else None,
         )
 
-    if subprocess.check_output(
+    if not subprocess.check_output(
         ["git", "status", "--porcelain"],
         text=True,
         cwd=path,
