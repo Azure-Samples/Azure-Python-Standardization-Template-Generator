@@ -48,9 +48,9 @@ from flaskapp import db
 {% if cookiecutter.project_backend in ("flask", "fastapi") %}
 # Set start method to "fork" to avoid issues with pickling on OSes that default to "spawn"
 if sys.platform == "win32":
-    multiprocessing.set_start_method("spawn")
+    multiprocessing.set_start_method("spawn", force=True)
 else:
-    multiprocessing.set_start_method("fork")
+    multiprocessing.set_start_method("fork", force=True)
 {% endif %}
 
 {% if cookiecutter.project_backend == "fastapi" %}
