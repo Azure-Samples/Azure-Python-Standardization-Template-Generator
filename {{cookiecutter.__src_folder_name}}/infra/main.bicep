@@ -52,10 +52,6 @@ module keyVault './core/security/keyvault.bicep' = {
     tags: tags
     principalId: principalId
     allowPublicNetworkAccess: false
-    networkAcls: {
-      allowAzureServicesAccess: allowAzureServicesAccess
-      defaultAction: defaultAction
-    }
   }
 }
 
