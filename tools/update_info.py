@@ -1,15 +1,18 @@
 from typing_extensions import Annotated
 import cruft
 import logging
+from rich.logging import RichHandler
 import pathlib
 import subprocess
+import shutil
 import random
-from typing import Generator
+from typing import Generator, Tuple
 import typer
 import re
 import json
 import itertools
 from collections import defaultdict
+import tempfile
 
 # Typer CLI Info
 app = typer.Typer()
@@ -18,14 +21,18 @@ app.add_typer(info_app, name="info")
 repos_app = typer.Typer()
 app.add_typer(repos_app, name="repos")
 
-# Configure Logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler("update_info.log")
+file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 # Add the file handler to the logger
-logger.addHandler(file_handler)
+
+FORMAT = "%(message)s"
+logging.basicConfig(
+    level="INFO", format=FORMAT, datefmt="[%X]", handlers=[RichHandler(), file_handler]
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 with open("cookiecutter.json") as f:
     data = json.load(f)
@@ -131,6 +138,20 @@ def get_repos_by_pattern(pattern:str, repos: list[str]=list(get_azure_combinatio
     matching_repos = [repo[0] for repo in repos if pattern.match(repo[0])]
     return matching_repos
 
+
+def rm_rf_star(path: pathlib.Path):
+    """
+    Removes everything in the provided path, except the Git database
+    """
+    for item in path.glob("*"):
+        if item.name == ".git":
+            continue
+        if item.is_dir():
+            shutil.rmtree(item, ignore_errors=True)
+        else:
+            item.unlink()
+
+
 def update_repo(
         repo:str,
         source:str,
@@ -139,7 +160,7 @@ def update_repo(
         branch:str="cruft/update",
         checkout:str|None=None,
         submit_pr:bool=False,
-        **kwargs) -> None:
+        **kwargs) -> bool:
     """
     Updates the repo with the provided name
 
@@ -152,35 +173,32 @@ def update_repo(
         checkout (str): The name of the branch to checkout from repo to update.
         **kwargs: Additional keyword arguments to pass to cruft.update as
     """
-    # console = console.Console()
     per_file_formatter = logging.Formatter(f'%(asctime)s - {repo} - %(levelname)s - %(message)s')
     file_handler.setFormatter(per_file_formatter)
     url = f"git@github.com:Azure-Samples/{repo}.git"
-    logger.info(f"Cloning {checkout} branch from GitHub from {url}")
+    logger.info(f"Cloning branch from GitHub from {url}")
     logger.info(f"Saving to {path}")
     path = path.joinpath(repo)
 
     try:
-        if checkout is not None:
-            subprocess.check_output(
-                ["git", "clone", url],
-                cwd=path.parent,
-            )
-        else:
-            subprocess.check_output(
+        subprocess.check_output(
                 ["git", "clone", url],
                 cwd=path.parent,
             )
 
     except subprocess.CalledProcessError as e:
-        logging.warning(f"Could not to clone {checkout} branch on {url}: {e}.\nThis is likely a non-existent repo or branch.")
-        return None
+        logging.warning(f"Could not to clone on {url}: {e}.\nThis is likely a non-existent repo or branch.")
+        return False
 
-    subprocess.check_output(
-        ["git", "checkout", "-b", branch],
-        text=True,
-        cwd=path,
-    )
+    try:
+        subprocess.check_output(
+            ["git", "checkout", "-b", branch],
+            text=True,
+            cwd=path,
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error("Branch {0} doesn't exist", branch)
+        return False
     
     if force:
         with open(path.joinpath(".cruft.json"), "r") as f:
@@ -188,17 +206,46 @@ def update_repo(
             extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_key.startswith("_")}
         extra_context['__src_folder_name'] = repo 
         logger.info(f"{extra_context=}")
+
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
-        cruft.create(
-            source,
-            output_dir=path.parent,
-            extra_context=extra_context,
-            no_input=True,
-            overwrite_if_exists=True,
-            checkout=checkout if checkout else None,
-        )
+        tmp_output_dir = pathlib.Path(tempfile.mkdtemp())
+        try:
+            cruft.create(
+                source,
+                output_dir=tmp_output_dir,
+                extra_context=extra_context,
+                no_input=True,
+                overwrite_if_exists=True,
+                checkout=checkout if checkout else None,
+            )
+        except Exception as e:
+            logger.error(f"Could not create new template from {source}: {e}")
+            return None
+
+        # Delete everything in path
+        rm_rf_star(path)
+
+        # Copy all the files from the tmp_output_dir to path
+        generated_folder = (tmp_output_dir / repo)
+        for item in generated_folder.glob("*"):
+            if item.is_dir():
+                shutil.copytree(item, path.joinpath(item.name))
+            else:
+                shutil.copy(item, path.joinpath(item.name))
+
+        # Update cruft and reset the template path to be GitHub
+        with open(path.joinpath(".cruft.json"), "r") as f:
+            cruft_json = json.loads(f.read())
+            cruft_json["template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+            cruft_json["context"]["cookiecutter"]["_template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+        with open(path.joinpath(".cruft.json"), "w") as f:
+            f.write(json.dumps(cruft_json, indent=2))
+
+        # Remove the tmp_output_dir
+        shutil.rmtree(tmp_output_dir)
+
         subprocess.check_output(
             ["git", "add", "."],
             text=True,
@@ -206,7 +253,7 @@ def update_repo(
         )
         try:
             subprocess.check_output(
-                ["git", "commit", "-m", "remove cruft.json"],
+                ["git", "commit", "-m", "Cruft Update (force)"],
                 text=True,
                 cwd=path,
             )
@@ -222,13 +269,13 @@ def update_repo(
             checkout=checkout if checkout else None,
         )
 
-    if not subprocess.check_output(
-        ["git", "status", "--porcelain"],
-        text=True,
-        cwd=path,
-    ):
-        logger.info(f"No changes for {path}, skipping.")
-        return
+        if not subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+            cwd=path,
+        ):
+            logger.warning(f"No changes for {path}, skipping.")
+            return
 
     if rejection_files:=list(pathlib.Path(path).rglob("*.rej")):
         files_str = '\n- '.join([str(x) for x in rejection_files])
