@@ -206,6 +206,7 @@ def update_repo(
             extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_key.startswith("_")}
         extra_context['__src_folder_name'] = repo 
         logger.info(f"{extra_context=}")
+
         logger.info(f"Removing cruft.json from {path}")
         path.joinpath(".cruft.json").unlink()
         logger.info(f"Linking {source} to {path}")
@@ -227,11 +228,23 @@ def update_repo(
         rm_rf_star(path)
 
         # Copy all the files from the tmp_output_dir to path
-        for item in tmp_output_dir.glob("*"):
+        generated_folder = (tmp_output_dir / repo)
+        for item in generated_folder.glob("*"):
             if item.is_dir():
                 shutil.copytree(item, path.joinpath(item.name))
             else:
                 shutil.copy(item, path.joinpath(item.name))
+
+        # Update cruft and reset the template path to be GitHub
+        with open(path.joinpath(".cruft.json"), "r") as f:
+            cruft_json = json.loads(f.read())
+            cruft_json["template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+            cruft_json["context"]["cookiecutter"]["_template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+        with open(path.joinpath(".cruft.json"), "w") as f:
+            f.write(json.dumps(cruft_json, indent=2))
+
+        # Remove the tmp_output_dir
+        shutil.rmtree(tmp_output_dir)
 
         subprocess.check_output(
             ["git", "add", "."],

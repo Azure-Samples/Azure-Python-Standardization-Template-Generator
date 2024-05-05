@@ -11,7 +11,7 @@
             "program": "tools/update_info.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "args": "repos update --pr --source=${workspaceFolder} --branch=force-rebuild",
+            "args": "repos update --pr --source=${workspaceFolder} --branch=force-rebuild3",
         }
     ]
 }
