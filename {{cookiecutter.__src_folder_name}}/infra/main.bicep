@@ -32,10 +32,6 @@ var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var prefix = '${name}-${resourceToken}'
 var tags = { 'azd-env-name': name }
 
-var allowAzureServicesAccess = true
-var defaultAction = false
-
-
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${name}-rg'
   location: location
@@ -51,7 +47,6 @@ module keyVault './core/security/keyvault.bicep' = {
     location: location
     tags: tags
     principalId: principalId
-    allowPublicNetworkAccess: false
   }
 }
 

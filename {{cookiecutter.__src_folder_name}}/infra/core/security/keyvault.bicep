@@ -6,7 +6,7 @@ param tags object = {}
 param principalId string = ''
 
 // Allow public network access to Key Vault
-param allowPublicNetworkAccess bool = true
+param allowPublicNetworkAccess bool = false
 
 // Allow all Azure services to bypass Key Vault network rules
 param allowAzureServicesAccess bool = true
