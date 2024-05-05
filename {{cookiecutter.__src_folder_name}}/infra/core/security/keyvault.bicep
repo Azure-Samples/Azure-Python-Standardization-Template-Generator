@@ -5,6 +5,19 @@ param tags object = {}
 
 param principalId string = ''
 
+// Allow public network access to Key Vault
+param allowPublicNetworkAccess bool = false
+
+// Allow all Azure services to bypass Key Vault network rules
+param allowAzureServicesAccess bool = true
+
+param networkAcls object = {
+  bypass: allowAzureServicesAccess ? 'AzureServices' : 'None'
+  defaultAction: allowPublicNetworkAccess ? 'Allow' : 'Deny'
+  ipRules: []
+  virtualNetworkRules: []
+}
+
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: name
   location: location
@@ -12,6 +25,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   properties: {
     tenantId: subscription().tenantId
     sku: { family: 'A', name: 'standard' }
+    networkAcls: networkAcls
     accessPolicies: !empty(principalId) ? [
       {
         objectId: principalId
