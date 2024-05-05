@@ -160,6 +160,7 @@ def update_repo(
         branch:str="cruft/update",
         checkout:str|None=None,
         submit_pr:bool=False,
+        title:str="Cruft Update",
         **kwargs) -> bool:
     """
     Updates the repo with the provided name
@@ -310,7 +311,7 @@ def update_repo(
         try:
             logger.info(f"Creating PR for {path}")
             subprocess.check_output(
-                ["gh", "pr", "create", "--title", "Update from Cruft", "--body","update from cruft"],
+                ["gh", "pr", "create", "--title", title, "--body", "Update from cruft"],
                 text=True,
                 cwd=path,
             )
@@ -348,6 +349,7 @@ def update_repos(
         help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
     )]=None,
     base_folder: Annotated[str, typer.Option("--base-folder")]=None,
+    title: Annotated[str, typer.Option("--title")]="Cruft Update",
 ) -> None:
 
     """Updates all repos that match the provided pattern or all of the repos if no pattern is provided."""
@@ -366,6 +368,7 @@ def update_repos(
             submit_pr=submit_pr,
             source=source,
             force=force,
+            title=title,
         )
 
 if __name__ == "__main__":
