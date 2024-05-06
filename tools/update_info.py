@@ -23,7 +23,7 @@ app.add_typer(repos_app, name="repos")
 
 file_handler = logging.FileHandler("update_info.log")
 file_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 
@@ -67,7 +67,7 @@ def get_azure_combinations() -> Generator[tuple[str, str], None, None]:
         yield base_keys, base_values
 
 
-@info_app.command(name='list_repos')
+@info_app.command(name="list_repos")
 def metadata_list():
     """
     Creates a json file with the metadata for the combinations
@@ -91,6 +91,7 @@ def metadata_list():
 
     with open("metadata.json", "w") as outfile:
         json.dump(metadata_dict, outfile, indent=4)
+
 
 @info_app.command()
 def update_readme():
@@ -119,6 +120,7 @@ def update_readme():
 
     print(f"{len(list(combos))}: Total Combinations")
 
+
 def create_base_folder(base_folder=None):
     """Creates the base folder for the repo"""
     if not base_folder:
@@ -129,7 +131,9 @@ def create_base_folder(base_folder=None):
     # TODO: Get repos by pattern
 
 
-def get_repos_by_pattern(pattern:str, repos: list[str]=list(get_azure_combinations())) -> list[str]:
+def get_repos_by_pattern(
+    pattern: str, repos: list[str] = list(get_azure_combinations())
+) -> list[str]:
     """
     Returns a list of repos that match the provided pattern.
     TODO: #305 Add Test
@@ -153,15 +157,17 @@ def rm_rf_star(path: pathlib.Path):
 
 
 def update_repo(
-        repo:str,
-        source:str,
-        path: pathlib.Path,
-        force: bool=False,
-        branch:str="cruft/update",
-        checkout:str|None=None,
-        submit_pr:bool=False,
-        title:str="Cruft Update",
-        **kwargs) -> bool:
+    repo: str,
+    source: str,
+    path: pathlib.Path,
+    force: bool = False,
+    branch: str = "cruft/update",
+    checkout: str | None = None,
+    submit_pr: bool = False,
+    title: str = "Cruft Update",
+    fork: str = None,
+    **kwargs,
+) -> bool:
     """
     Updates the repo with the provided name
 
@@ -174,7 +180,9 @@ def update_repo(
         checkout (str): The name of the branch to checkout from repo to update.
         **kwargs: Additional keyword arguments to pass to cruft.update as
     """
-    per_file_formatter = logging.Formatter(f'%(asctime)s - {repo} - %(levelname)s - %(message)s')
+    per_file_formatter = logging.Formatter(
+        f"%(asctime)s - {repo} - %(levelname)s - %(message)s"
+    )
     file_handler.setFormatter(per_file_formatter)
     url = f"git@github.com:Azure-Samples/{repo}.git"
     logger.info(f"Cloning branch from GitHub from {url}")
@@ -183,12 +191,14 @@ def update_repo(
 
     try:
         subprocess.check_output(
-                ["git", "clone", url],
-                cwd=path.parent,
-            )
+            ["git", "clone", url],
+            cwd=path.parent,
+        )
 
     except subprocess.CalledProcessError as e:
-        logging.warning(f"Could not to clone on {url}: {e}.\nThis is likely a non-existent repo or branch.")
+        logging.warning(
+            f"Could not to clone on {url}: {e}.\nThis is likely a non-existent repo or branch."
+        )
         return False
 
     try:
@@ -200,12 +210,16 @@ def update_repo(
     except subprocess.CalledProcessError as e:
         logging.error("Branch {0} doesn't exist", branch)
         return False
-    
+
     if force:
         with open(path.joinpath(".cruft.json"), "r") as f:
-            extra_context=json.loads(f.read())["context"]["cookiecutter"]
-            extra_context={ec_key:val for ec_key, val in extra_context.items() if not ec_key.startswith("_")}
-        extra_context['__src_folder_name'] = repo 
+            extra_context = json.loads(f.read())["context"]["cookiecutter"]
+            extra_context = {
+                ec_key: val
+                for ec_key, val in extra_context.items()
+                if not ec_key.startswith("_")
+            }
+        extra_context["__src_folder_name"] = repo
         logger.info(f"{extra_context=}")
 
         logger.info(f"Removing cruft.json from {path}")
@@ -229,7 +243,7 @@ def update_repo(
         rm_rf_star(path)
 
         # Copy all the files from the tmp_output_dir to path
-        generated_folder = (tmp_output_dir / repo)
+        generated_folder = tmp_output_dir / repo
         for item in generated_folder.glob("*"):
             if item.is_dir():
                 shutil.copytree(item, path.joinpath(item.name))
@@ -239,8 +253,12 @@ def update_repo(
         # Update cruft and reset the template path to be GitHub
         with open(path.joinpath(".cruft.json"), "r") as f:
             cruft_json = json.loads(f.read())
-            cruft_json["template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
-            cruft_json["context"]["cookiecutter"]["_template"] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+            cruft_json["template"] = (
+                "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
+            )
+            cruft_json["context"]["cookiecutter"][
+                "_template"
+            ] = "https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator"
         with open(path.joinpath(".cruft.json"), "w") as f:
             f.write(json.dumps(cruft_json, indent=2))
 
@@ -278,8 +296,8 @@ def update_repo(
             logger.warning(f"No changes for {path}, skipping.")
             return
 
-    if rejection_files:=list(pathlib.Path(path).rglob("*.rej")):
-        files_str = '\n- '.join([str(x) for x in rejection_files])
+    if rejection_files := list(pathlib.Path(path).rglob("*.rej")):
+        files_str = "\n- ".join([str(x) for x in rejection_files])
         logger.error(f"Rejection files found for {path}!\nFiles: {files_str}")
         return None
 
@@ -302,11 +320,25 @@ def update_repo(
                 raise e
 
         logger.info(f"Pushing changes to {branch}")
-        subprocess.check_output(
-            ["git", "push", "--set-upstream", "origin", branch],
-            text=True,
-            cwd=path,
-        )
+
+        if fork:
+            fork_url = f"git@github.com:{fork}/{repo}.git"
+            subprocess.check_output(
+                ["git", "remote", "add", "me", fork_url],
+                text=True,
+                cwd=path,
+            )
+            subprocess.check_output(
+                ["git", "push", "--set-upstream", "me", branch],
+                text=True,
+                cwd=path,
+            )
+        else:
+            subprocess.check_output(
+                ["git", "push", "--set-upstream", "origin", branch],
+                text=True,
+                cwd=path,
+            )
 
         try:
             logger.info(f"Creating PR for {path}")
@@ -316,47 +348,66 @@ def update_repo(
                 cwd=path,
             )
             subprocess.check_output(
-                ["gh", "pr", "view", "--web"], 
+                ["gh", "pr", "view", "--web"],
                 text=True,
                 cwd=path,
             )
-            
 
         except subprocess.CalledProcessError as e:
             logger.error(f"Could not create PR for {path}: {e}")
             pass
 
+
 @repos_app.command(name="update")
 def update_repos(
-    pattern: Annotated[str, typer.Argument(
-        help="The pattern to match repos to update.",
-        show_default=False,
-    )]="",
-    branch: Annotated[str, typer.Option(
-        "--branch",
-        "-b",
-        help="The branch to create and push to.",
-    )]="cruft/update",
-    checkout: Annotated[str, typer.Option(
-        "--checkout",
-        "-c",
-        help="The branch to use for cruft updates `checkout` parameter.",
-    )]=None,
-    submit_pr: Annotated[bool, typer.Option("--pr", "-P")]=False,
-    source: Annotated[str, typer.Option(
-        "--source",
-        "-s",
-        help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
-    )]=None,
-    base_folder: Annotated[str, typer.Option("--base-folder")]=None,
-    title: Annotated[str, typer.Option("--title")]="Cruft Update",
+    pattern: Annotated[
+        str,
+        typer.Argument(
+            help="The pattern to match repos to update.",
+            show_default=False,
+        ),
+    ] = "",
+    branch: Annotated[
+        str,
+        typer.Option(
+            "--branch",
+            "-b",
+            help="The branch to create and push to.",
+        ),
+    ] = "cruft/update",
+    checkout: Annotated[
+        str,
+        typer.Option(
+            "--checkout",
+            "-c",
+            help="The branch to use for cruft updates `checkout` parameter.",
+        ),
+    ] = None,
+    submit_pr: Annotated[bool, typer.Option("--pr", "-P")] = False,
+    source: Annotated[
+        str,
+        typer.Option(
+            "--source",
+            "-s",
+            help="The source to use for cruft updates `source` parameter. Setting this will change the .cruft.json file to use the provided source permanently.",
+        ),
+    ] = None,
+    base_folder: Annotated[str, typer.Option("--base-folder")] = None,
+    title: Annotated[
+        str, typer.Option("--title", help="Title of the PR to raise")
+    ] = "Cruft Update",
+    fork: Annotated[
+        str,
+        typer.Option("--fork", help="Raise PR from a Fork, where fork=your_username"),
+    ] = None,
 ) -> None:
-
     """Updates all repos that match the provided pattern or all of the repos if no pattern is provided."""
-    logger.info(f"Request updates to repos matching \"{pattern}\" requested. Attrs: \n\t{branch=}\n\t{checkout=}")
+    logger.info(
+        f'Request updates to repos matching "{pattern}" requested. Attrs: \n\t{branch=}\n\t{checkout=}'
+    )
     patterns = get_repos_by_pattern(pattern)
-    patterns_str = '\n- '.join(patterns)
-    logger.info(f"Found {len(patterns)} repos matching \"{pattern}\"\n- {patterns_str}")
+    patterns_str = "\n- ".join(patterns)
+    logger.info(f'Found {len(patterns)} repos matching "{pattern}"\n- {patterns_str}')
     force = source is not None
 
     for repo in patterns:
@@ -370,6 +421,7 @@ def update_repos(
             force=force,
             title=title,
         )
+
 
 if __name__ == "__main__":
     app()
