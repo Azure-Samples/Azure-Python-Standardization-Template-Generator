@@ -420,6 +420,7 @@ def update_repos(
             source=source,
             force=force,
             title=title,
+            fork=fork,
         )
 
 
