@@ -272,7 +272,7 @@ def update_repo(
         )
         try:
             subprocess.check_output(
-                ["git", "commit", "-m", "Cruft Update (force)"],
+                ["git", "commit", "-m", title],
                 text=True,
                 cwd=path,
             )
