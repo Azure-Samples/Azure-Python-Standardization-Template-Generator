@@ -1,0 +1,28 @@
+#
+# PSRule configuration
+#
+
+# Please see the documentation for all configuration options:
+# https://aka.ms/ps-rule-azure/options
+
+# Require a minimum version of PSRule for Azure.
+requires:
+  PSRule.Rules.Azure: '>=1.34.0' # (1)
+
+# Automatically use rules for Azure.
+include:
+  module:
+  - PSRule.Rules.Azure # (2)
+
+configuration:
+  # Enable expansion of Azure Template files.
+  AZURE_PARAMETER_FILE_EXPANSION: true
+  # Enable expansion of Azure Bicep files.
+  AZURE_BICEP_FILE_EXPANSION: true
+  AZURE_BICEP_CHECK_TOOL: true
+
+# Ignore all files except .bicepparam files.
+input:
+  pathIgnore:
+  - '!**/*.bicepparam' # (4)
+  - '!**/*.json' # (5)
