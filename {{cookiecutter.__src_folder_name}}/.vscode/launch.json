@@ -7,7 +7,7 @@
         {% if cookiecutter.project_backend == "django" %}
         {
             "name": "Python: Django",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/src/manage.py",
             "args": [
@@ -20,7 +20,7 @@
         {% if cookiecutter.project_backend == "flask" %}
         {
             "name": "Python: Flask",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -40,7 +40,7 @@
         {% if cookiecutter.project_backend == "fastapi" %}
         {
             "name": "Python: FastAPI",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
             "args": [
@@ -51,7 +51,7 @@
         {% endif %}
         {
             "name": "Python: Debug Tests",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "purpose": ["debug-test"],
