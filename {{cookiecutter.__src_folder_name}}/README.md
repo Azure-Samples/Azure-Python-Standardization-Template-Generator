@@ -7,8 +7,6 @@ languages:
 - python
 - bicep
 - html
-- css
-- scss
 products:
 - azure
 {% if cookiecutter.project_host == "aca" %}
@@ -18,7 +16,7 @@ products:
 - azure-app-service
 {% endif %}
 {% if "postgres" in cookiecutter.db_resource %}
-- azure-postgresql
+- azure-database-postgresql
 {% endif %}
 {% if "cosmos" in cookiecutter.db_resource %}
 - azure-cosmos-db
