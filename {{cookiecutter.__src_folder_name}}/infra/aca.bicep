@@ -28,16 +28,13 @@ resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   location: location
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyVaultName
-}
-
 // Give the app access to KeyVault
-module webKeyVaultAccess './core/security/keyvault-access.bicep' = {
+module webKeyVaultAccess './core/security/role.bicep' = {
   name: 'web-keyvault-access'
   params: {
-    keyVaultName: keyVault.name
     principalId: webIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: '00482a5a-887f-4fb3-b363-3b7fe8e74483'
   }
 }
 
