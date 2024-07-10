@@ -61,6 +61,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
     name: '${take(replace(prefix, '-', ''), 17)}-vault'
     location: location
     tags: tags
+    sku: 'standard'
     enableRbacAuthorization: true
     accessPolicies: [
       {
