@@ -94,12 +94,15 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
           nbf: 0
         }
     }]
-    roleAssignments: [
-      {
-        principalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
-        roleDefinitionIdOrName: 'Key Vault Secrets User'
-      }
-    ]
+    
+  }
+}
+
+module roleAssignment 'core/security/role.bicep' = {
+  scope: resourceGroup
+  params: {
+    principalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6'
   }
 }
 
