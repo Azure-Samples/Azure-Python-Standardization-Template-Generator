@@ -196,7 +196,7 @@ output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME
 output SERVICE_WEB_URI string = web.outputs.SERVICE_WEB_URI
 output SERVICE_WEB_IMAGE_NAME string = web.outputs.SERVICE_WEB_IMAGE_NAME
 {% endif %}
-output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
+output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.uri
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsName
 
