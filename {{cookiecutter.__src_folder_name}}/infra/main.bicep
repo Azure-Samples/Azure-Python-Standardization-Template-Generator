@@ -87,6 +87,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
     secrets: [for secret in secrets: {
         name: secret.name
         value: secret.value
+        tags: tags
         attributes : {
           exp: 0
           nbf: 0
