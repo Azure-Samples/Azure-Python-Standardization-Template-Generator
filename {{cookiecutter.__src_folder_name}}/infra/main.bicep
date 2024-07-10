@@ -32,6 +32,21 @@ var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var prefix = '${name}-${resourceToken}'
 var tags = { 'azd-env-name': name }
 
+var secrets = [
+  {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+  {
+    name: 'DBSERVERPASSWORD'
+    value: dbserverPassword
+  }
+  {% endif %}
+  {% if cookiecutter.project_backend in ("django", "flask") %}
+  {
+    name: 'SECRETKEY'
+    value: secretKey
+  }
+  {% endif %}
+]
+
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${name}-rg'
   location: location
@@ -39,15 +54,44 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 // Store secrets in a keyvault
-module keyVault './core/security/keyvault.bicep' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
   name: 'keyvault'
   scope: resourceGroup
   params: {
     name: '${take(replace(prefix, '-', ''), 17)}-vault'
     location: location
     tags: tags
-    principalId: principalId
-    logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
+    enableRbacAuthorization: true
+    accessPolicies: [
+      {
+        objectId: principalId
+        permissions: { secrets: [ 'get', 'list' ] }
+        tenantId: subscription().tenantId
+      }
+    ]
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+    }
+    diagnosticSettings: [
+      {
+        logCategoriesAndGroups: [
+          {
+            category: 'AuditEvent'
+          }
+        ]
+        name: 'auditEventLogging'
+        workspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
+      }
+    ]
+    secrets: [for secret in secrets: {
+        name: secret.name
+        value: secret.value
+        attributes : {
+          exp: 0
+          nbf: 0
+        }
+    }]
   }
 }
 
@@ -141,35 +185,6 @@ module web 'web.bicep' = {
     {% endif %}
   }
 }
-
-
-
-
-var secrets = [
-  {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
-  {
-    name: 'DBSERVERPASSWORD'
-    value: dbserverPassword
-  }
-  {% endif %}
-  {% if cookiecutter.project_backend in ("django", "flask") %}
-  {
-    name: 'SECRETKEY'
-    value: secretKey
-  }
-  {% endif %}
-]
-
-@batchSize(1)
-module keyVaultSecrets './core/security/keyvault-secret.bicep' = [for secret in secrets: {
-  name: 'keyvault-secret-${secret.name}'
-  scope: resourceGroup
-  params: {
-    keyVaultName: keyVault.outputs.name
-    name: secret.name
-    secretValue: secret.value
-  }
-}]
 
 output AZURE_LOCATION string = location
 {% if cookiecutter.project_host == "aca" %}
