@@ -23,19 +23,13 @@ param dbserverPassword string
 param postgresServiceId string
 {% endif %}
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
+
 resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
   location: location
-}
-
-// Give the app access to KeyVault
-module webKeyVaultAccess './core/security/role.bicep' = {
-  name: 'web-keyvault-access'
-  params: {
-    principalId: webIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: '00482a5a-887f-4fb3-b363-3b7fe8e74483'
-  }
 }
 
 {% if cookiecutter.project_host == "aca" %}
