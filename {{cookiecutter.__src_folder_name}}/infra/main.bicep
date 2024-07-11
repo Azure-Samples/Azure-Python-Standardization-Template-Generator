@@ -99,6 +99,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
 }
 
 module roleAssignment 'core/security/role.bicep' = {
+  name: 'webRoleAssignment'
   scope: resourceGroup
   params: {
     principalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
