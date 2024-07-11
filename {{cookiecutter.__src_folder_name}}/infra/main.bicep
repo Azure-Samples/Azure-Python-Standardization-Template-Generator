@@ -70,10 +70,6 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
         tenantId: subscription().tenantId
       }
     ]
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Deny'
-    }
     diagnosticSettings: [
       {
         logCategoriesAndGroups: [
