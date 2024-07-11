@@ -11,6 +11,7 @@ param dbserverDomainName string
 param dbserverUser string
 param dbserverDatabaseName string
 {% endif %}
+param virtualNetworkSubnetId string = ''
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName

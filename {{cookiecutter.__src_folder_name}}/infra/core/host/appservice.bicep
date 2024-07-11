@@ -8,6 +8,7 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param keyVaultName string = ''
 param managedIdentity bool = !empty(keyVaultName)
+param virtualNetworkSubnetId string = ''
 
 // Runtime Properties
 @allowed([
@@ -65,6 +66,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     }
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: true
+    virtualNetworkSubnetId: virtualNetworkSubnetId
   }
 
   identity: { type: managedIdentity ? 'SystemAssigned' : 'None' }

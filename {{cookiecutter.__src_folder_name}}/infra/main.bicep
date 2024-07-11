@@ -53,6 +53,54 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
+  name: 'virtualNetworkDeployment'
+  scope: resourceGroup
+  params: {
+    // Required parameters
+    addressPrefixes: [
+      '10.0.0.0/16'
+    ]
+    name: '${name}-vnet'
+    location: location
+    tags: tags
+    subnets: [
+      {
+        addressPrefix: '10.0.0.0/24'
+        name: 'keyvault'
+        tags: tags
+      }
+      {
+        addressPrefix: '10.0.1.0/24'
+        name: 'web'
+        tags: tags
+        delegations: [
+          {
+            name: 'msft-web-serverfarm-delegation'
+            properties: {
+              serviceName: 'Microsoft.Web/serverFarms'
+            }
+          }
+        ]
+        serviceEndpoints: [
+          { 
+            service: 'Microsoft.KeyVault'
+          }
+        ]
+      }
+    ]
+  }
+}
+
+module privateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
+  name: 'privateDnsZoneDeployment'
+  scope: resourceGroup
+  params: {
+    name: 'relecloud.net'
+    tags: tags
+  }
+}
+
 // Store secrets in a keyvault
 module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
   name: 'keyvault'
@@ -66,8 +114,27 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
     accessPolicies: [
       {
         objectId: principalId
-        permissions: { secrets: [ 'get', 'list' ] }
+        permissions: { secrets: ['get', 'list'] }
         tenantId: subscription().tenantId
+      }
+    ]
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      // ipRules: [
+      //   { value: '<your IP>' }
+      // ]
+      virtualNetworkRules: [
+        {
+          id: virtualNetwork.outputs.subnetResourceIds[1]
+        }
+      ]
+    }
+    privateEndpoints: [
+      {
+        name: '${name}-keyvault-pe'
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[0]
+        privateDnsZoneResourceIds: [privateDnsZone.outputs.resourceId]
       }
     ]
     diagnosticSettings: [
@@ -81,16 +148,17 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
         workspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
       }
     ]
-    secrets: [for secret in secrets: {
+    secrets: [
+      for secret in secrets: {
         name: secret.name
         value: secret.value
         tags: tags
-        attributes : {
+        attributes: {
           exp: 0
           nbf: 0
         }
-    }]
-    
+      }
+    ]
   }
 }
 
@@ -191,6 +259,7 @@ module web 'web.bicep' = {
     {% if cookiecutter.db_resource == "postgres-addon" %}
     postgresServiceId: db.outputs.dbserverID
     {% endif %}
+    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
 

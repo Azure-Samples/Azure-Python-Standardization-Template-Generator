@@ -15,6 +15,7 @@ param keyVaultName string
 param dbserverDomainName string
 param dbserverDatabaseName string
 param dbserverUser string
+param virtualNetworkSubnetId string = ''
 
 @secure()
 param dbserverPassword string
