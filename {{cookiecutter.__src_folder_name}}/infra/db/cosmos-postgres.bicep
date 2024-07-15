@@ -27,3 +27,7 @@ module dbserver '../core/database/cosmos/cosmos-pg-adapter.bicep' = {
     nodeVCores: 4
   }
 }
+
+output dbserverDatabaseName string = dbserverDatabaseName
+output dbserverUser string = dbserverUser
+output dbserverDomainName string = dbserver.outputs.domainName

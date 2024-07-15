@@ -34,6 +34,4 @@ module dbserver '../core/database/postgresql/flexibleserver.bicep' = {
 
 output dbserverDatabaseName string = dbserverDatabaseName
 output dbserverUser string = dbserverUser
-
-// "postgres-flexible", "cosmos-postgres"
 output dbserverDomainName string = dbserver.outputs.domainName
