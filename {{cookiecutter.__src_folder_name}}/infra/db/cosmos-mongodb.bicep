@@ -3,6 +3,7 @@ param location string = resourceGroup().location
 param tags object = {}
 param prefix string
 param dbserverDatabaseName string
+param sqlRoleAssignmentPrincipalId string
 
 module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = {
   name: name
@@ -23,7 +24,7 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
       }
     ]
     disableKeyBasedMetadataWriteAccess: true // See PsRule AZR-000095
-
+    sqlRoleAssignmentsPrincipalIds: [sqlRoleAssignmentPrincipalId]
     mongodbDatabases: [
       {
         name: dbserverDatabaseName

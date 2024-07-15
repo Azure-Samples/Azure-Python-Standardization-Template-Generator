@@ -13,6 +13,8 @@ param location string
 @secure()
 @description('DBServer administrator password')
 param dbserverPassword string
+{% else %}
+var dbserverPassword = '' // Only used by the linter
 {% endif %}
 
 {% if cookiecutter.project_backend in ("django", "flask") %}
@@ -183,8 +185,8 @@ module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos
     location: location
     tags: tags
     prefix: prefix
-    keyVaultName: keyVault.outputs.name
     dbserverDatabaseName: 'relecloud'
+    sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
   }
 }
 
