@@ -61,6 +61,7 @@ module web 'core/host/appservice.bicep' = {
       AZURE_COSMOS_CONNECTION_STRING: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=AZURE-COSMOS-CONNECTION-STRING)'
       {% endif %}
     }
+    virtualNetworkSubnetId: virtualNetworkSubnetId
   }
 }
 

@@ -8,7 +8,6 @@ param applicationInsightsName string = ''
 param appServicePlanId string
 param keyVaultName string = ''
 param managedIdentity bool = !empty(keyVaultName)
-param virtualNetworkSubnetId string = ''
 
 // Runtime Properties
 @allowed([
@@ -37,6 +36,7 @@ param scmDoBuildDuringDeployment bool = false
 param use32BitWorkerProcess bool = false
 param ftpsState string = 'FtpsOnly'
 param healthCheckPath string = ''
+param virtualNetworkSubnetId string = ''
 
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: name

@@ -217,7 +217,8 @@ module containerApps 'core/host/container-apps.bicep' = {
     location: location
     containerAppsEnvironmentName: '${prefix}-containerapps-env'
     containerRegistryName: '${replace(prefix, '-', '')}registry'
-    logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
+    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
+    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
 {% endif %}

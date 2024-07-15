@@ -7,17 +7,32 @@ param containerAppsEnvironmentName string
 param containerRegistryName string
 param containerRegistryResourceGroupName string = ''
 param containerRegistryAdminUserEnabled bool = false
-param logAnalyticsWorkspaceName string
-param applicationInsightsName string = ''
+param logAnalyticsWorkspaceResourceId string
+param applicationInsightsName string = '' // Not used here, was used for DAPR
+param virtualNetworkSubnetId string = ''
 
-module containerAppsEnvironment 'container-apps-environment.bicep' = {
+@description('Optional user assigned identity IDs to assign to the resource')
+param userAssignedIdentityResourceIds array = []
+
+module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.5.2' = {
   name: '${name}-container-apps-environment'
   params: {
+    // Required parameters
+    logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
+
+    managedIdentities: empty(userAssignedIdentityResourceIds) ? {
+      systemAssigned: true
+    } : {
+      userAssignedResourceIds: userAssignedIdentityResourceIds
+    }
+
     name: containerAppsEnvironmentName
+    // Non-required parameters
+    infrastructureResourceGroupName: containerRegistryResourceGroupName
+    infrastructureSubnetId: virtualNetworkSubnetId
+    // internal: true
     location: location
     tags: tags
-    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
-    applicationInsightsName: applicationInsightsName
   }
 }
 
@@ -34,7 +49,7 @@ module containerRegistry 'container-registry.bicep' = {
 
 output defaultDomain string = containerAppsEnvironment.outputs.defaultDomain
 output environmentName string = containerAppsEnvironment.outputs.name
-output environmentId string = containerAppsEnvironment.outputs.id
+output environmentId string = containerAppsEnvironment.outputs.resourceId
 
 output registryLoginServer string = containerRegistry.outputs.loginServer
 output registryName string = containerRegistry.outputs.name
