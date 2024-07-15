@@ -11,6 +11,7 @@ param dbserverDomainName string
 param dbserverUser string
 param dbserverDatabaseName string
 {% endif %}
+param virtualNetworkSubnetId string = ''
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
@@ -60,15 +61,17 @@ module web 'core/host/appservice.bicep' = {
       AZURE_COSMOS_CONNECTION_STRING: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=AZURE-COSMOS-CONNECTION-STRING)'
       {% endif %}
     }
+    virtualNetworkSubnetId: virtualNetworkSubnetId
   }
 }
 
 // Give the app access to KeyVault
-module webKeyVaultAccess './core/security/keyvault-access.bicep' = {
+module webKeyVaultAccess './core/security/role.bicep' = {
   name: 'web-keyvault-access'
   params: {
-    keyVaultName: keyVaultName
     principalId: web.outputs.identityPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: '00482a5a-887f-4fb3-b363-3b7fe8e74483'
   }
 }
 

@@ -32,22 +32,144 @@ var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var prefix = '${name}-${resourceToken}'
 var tags = { 'azd-env-name': name }
 
+var secrets = [
+  {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
+  {
+    name: 'DBSERVERPASSWORD'
+    value: dbserverPassword
+  }
+  {% endif %}
+  {% if cookiecutter.project_backend in ("django", "flask") %}
+  {
+    name: 'SECRETKEY'
+    value: secretKey
+  }
+  {% endif %}
+]
+
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${name}-rg'
   location: location
   tags: tags
 }
 
+module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
+  name: 'virtualNetworkDeployment'
+  scope: resourceGroup
+  params: {
+    // Required parameters
+    addressPrefixes: [
+      '10.0.0.0/16'
+    ]
+    name: '${name}-vnet'
+    location: location
+    tags: tags
+    subnets: [
+      {
+        addressPrefix: '10.0.0.0/24'
+        name: 'keyvault'
+        tags: tags
+      }
+      {
+        addressPrefix: '10.0.2.0/23'
+        name: 'web'
+        tags: tags
+        {% if cookiecutter.project_host == "appservice" %}
+        delegations: [
+          {
+            name: 'msft-web-serverfarm-delegation'
+            properties: {
+              serviceName: 'Microsoft.Web/serverFarms'
+            }
+          }
+        ]
+        {% endif %}
+        serviceEndpoints: [
+          { 
+            service: 'Microsoft.KeyVault'
+          }
+        ]
+      }
+    ]
+  }
+}
+
+module privateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
+  name: 'privateDnsZoneDeployment'
+  scope: resourceGroup
+  params: {
+    name: 'relecloud.net'
+    tags: tags
+  }
+}
+
 // Store secrets in a keyvault
-module keyVault './core/security/keyvault.bicep' = {
+module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
   name: 'keyvault'
   scope: resourceGroup
   params: {
     name: '${take(replace(prefix, '-', ''), 17)}-vault'
     location: location
     tags: tags
-    principalId: principalId
-    logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
+    sku: 'standard'
+    enableRbacAuthorization: true
+    accessPolicies: [
+      {
+        objectId: principalId
+        permissions: { secrets: ['get', 'list'] }
+        tenantId: subscription().tenantId
+      }
+    ]
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      // ipRules: [
+      //   { value: '<your IP>' }
+      // ]
+      virtualNetworkRules: [
+        {
+          id: virtualNetwork.outputs.subnetResourceIds[1]
+        }
+      ]
+    }
+    privateEndpoints: [
+      {
+        name: '${name}-keyvault-pe'
+        subnetResourceId: virtualNetwork.outputs.subnetResourceIds[0]
+        privateDnsZoneResourceIds: [privateDnsZone.outputs.resourceId]
+      }
+    ]
+    diagnosticSettings: [
+      {
+        logCategoriesAndGroups: [
+          {
+            category: 'AuditEvent'
+          }
+        ]
+        name: 'auditEventLogging'
+        workspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
+      }
+    ]
+    secrets: [
+      for secret in secrets: {
+        name: secret.name
+        value: secret.value
+        tags: tags
+        attributes: {
+          exp: 0
+          nbf: 0
+        }
+      }
+    ]
+  }
+}
+
+module roleAssignment 'core/security/role.bicep' = {
+  name: 'webRoleAssignment'
+  scope: resourceGroup
+  params: {
+    principalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
   }
 }
 
@@ -97,7 +219,8 @@ module containerApps 'core/host/container-apps.bicep' = {
     location: location
     containerAppsEnvironmentName: '${prefix}-containerapps-env'
     containerRegistryName: '${replace(prefix, '-', '')}registry'
-    logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
+    logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceId
+    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
 {% endif %}
@@ -121,6 +244,7 @@ module web 'web.bicep' = {
     {% if cookiecutter.project_host == "appservice" %}
     appCommandLine: 'entrypoint.sh'
     pythonVersion: '{{cookiecutter.python_version}}'
+    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
     {% endif %}
     {% if cookiecutter.project_host == "aca" %}
     identityName: '${prefix}-id-web'
@@ -142,35 +266,6 @@ module web 'web.bicep' = {
   }
 }
 
-
-
-
-var secrets = [
-  {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
-  {
-    name: 'DBSERVERPASSWORD'
-    value: dbserverPassword
-  }
-  {% endif %}
-  {% if cookiecutter.project_backend in ("django", "flask") %}
-  {
-    name: 'SECRETKEY'
-    value: secretKey
-  }
-  {% endif %}
-]
-
-@batchSize(1)
-module keyVaultSecrets './core/security/keyvault-secret.bicep' = [for secret in secrets: {
-  name: 'keyvault-secret-${secret.name}'
-  scope: resourceGroup
-  params: {
-    keyVaultName: keyVault.outputs.name
-    name: secret.name
-    secretValue: secret.value
-  }
-}]
-
 output AZURE_LOCATION string = location
 {% if cookiecutter.project_host == "aca" %}
 output AZURE_CONTAINER_ENVIRONMENT_NAME string = containerApps.outputs.environmentName
@@ -181,7 +276,7 @@ output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME
 output SERVICE_WEB_URI string = web.outputs.SERVICE_WEB_URI
 output SERVICE_WEB_IMAGE_NAME string = web.outputs.SERVICE_WEB_IMAGE_NAME
 {% endif %}
-output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
+output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.uri
 output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
 output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsName
 
