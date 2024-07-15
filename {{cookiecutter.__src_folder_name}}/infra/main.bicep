@@ -271,7 +271,7 @@ module web 'web.bicep' = {
     tags: tags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     keyVaultName: keyVault.outputs.name
-    
+
     {% if cookiecutter.project_host == "appservice" %}
     appCommandLine: 'entrypoint.sh'
     pythonVersion: '{{cookiecutter.python_version}}'
@@ -297,7 +297,7 @@ module web 'web.bicep' = {
     dbserverDatabaseName: cosmosPostgres.outputs.dbserverDatabaseName
     {% endif %}
 
-    {% if cookiecutter.project_host == "aca" %}
+    {% if cookiecutter.project_host == "aca" and cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
     dbserverPassword: dbserverPassword
     {% endif %}
 

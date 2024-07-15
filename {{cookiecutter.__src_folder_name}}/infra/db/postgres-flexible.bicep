@@ -11,27 +11,30 @@ var dbserverUser = 'admin${uniqueString(resourceGroup().id)}'
 param dbserverPassword string = ''
 param dbserverDatabaseName string = ''
 
-module dbserver '../core/database/postgresql/flexibleserver.bicep' = {
+module flexibleServer 'br/public:avm/res/db-for-postgre-sql/flexible-server:0.1.6' = {
   name: name
   params: {
     name: '${prefix}-postgresql'
     location: location
     tags: tags
-    sku: {
-      name: 'Standard_B1ms'
-      tier: 'Burstable'
-    }
-    storage: {
-      storageSizeGB: 32
-    }
+    skuName: 'Standard_B2s'
+    tier: 'Burstable'
     version: '{{pg_version}}'
     administratorLogin: dbserverUser
     administratorLoginPassword: dbserverPassword
-    databaseNames: [dbserverDatabaseName]
-    allowAzureIPsFirewall: true
+    databases: [{
+      name: dbserverDatabaseName
+    }]
+    firewallRules: [
+      {
+        endIpAddress: '0.0.0.0'
+        name: 'AllowAllWindowsAzureIps'
+        startIpAddress: '0.0.0.0'
+      }
+    ]
   }
 }
 
 output dbserverDatabaseName string = dbserverDatabaseName
 output dbserverUser string = dbserverUser
-output dbserverDomainName string = dbserver.outputs.domainName
+output dbserverDomainName string = flexibleServer.outputs.fqdn
