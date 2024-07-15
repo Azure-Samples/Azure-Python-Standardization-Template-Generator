@@ -242,6 +242,7 @@ module web 'web.bicep' = {
     {% if cookiecutter.project_host == "appservice" %}
     appCommandLine: 'entrypoint.sh'
     pythonVersion: '{{cookiecutter.python_version}}'
+    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
     {% endif %}
     {% if cookiecutter.project_host == "aca" %}
     identityName: '${prefix}-id-web'
@@ -260,7 +261,6 @@ module web 'web.bicep' = {
     {% if cookiecutter.db_resource == "postgres-addon" %}
     postgresServiceId: db.outputs.dbserverID
     {% endif %}
-    virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
 
