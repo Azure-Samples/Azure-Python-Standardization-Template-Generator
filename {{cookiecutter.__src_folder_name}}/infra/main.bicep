@@ -173,26 +173,56 @@ module roleAssignment 'core/security/role.bicep' = {
   }
 }
 
-module db 'db.bicep' = {
-  name: 'db'
+var DATABASE_RESOURCE = '{{cookiecutter.db_resource}}'
+
+module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos-mongodb') {
+  name: 'cosmosMongoDb'
   scope: resourceGroup
   params: {
     name: 'dbserver'
     location: location
     tags: tags
     prefix: prefix
-    {% if "mongodb" in cookiecutter.db_resource %}
     keyVaultName: keyVault.outputs.name
-    {% endif %}
-    {% if cookiecutter.db_resource != "postgres-addon" %}
     dbserverDatabaseName: 'relecloud'
-    {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres")%}
+  }
+}
+
+module cosmosPostgres 'db/cosmos-postgres.bicep' = if(DATABASE_RESOURCE == 'cosmos-postgres') {
+  name: 'cosmosPostgres'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    dbserverDatabaseName: 'relecloud'
     dbserverPassword: dbserverPassword
-    {% endif %}
-    {% if cookiecutter.db_resource == "postgres-addon" %}
+  }
+}
+
+module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgres-addon') {
+  name: 'postgresAddon'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
     containerAppsEnvironmentName: containerApps.outputs.environmentName
-    {% endif %}
+  }
+}
+
+module postgresFlexible 'db/postgres-flexible.bicep' = if(DATABASE_RESOURCE == 'postgres-flexible') {
+  name: 'postgresFlexible'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    dbserverDatabaseName: 'relecloud'
+    dbserverPassword: dbserverPassword
   }
 }
 
@@ -252,16 +282,27 @@ module web 'web.bicep' = {
     containerRegistryName: containerApps.outputs.registryName
     exists: webAppExists
     {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
-    dbserverDomainName: db.outputs.dbserverDomainName
-    dbserverUser: db.outputs.dbserverUser
-    dbserverDatabaseName: db.outputs.dbserverDatabaseName
+
+    {% if cookiecutter.db_resource  == "postgres-flexible" %}
+    dbserverDomainName: postgresFlexible.outputs.dbserverDomainName
+    dbserverUser: postgresFlexible.outputs.dbserverUser
+    dbserverDatabaseName: postgresFlexible.outputs.dbserverDatabaseName
+    {% endif %}
+
+    {% if cookiecutter.db_resource  == "cosmos-postgres" %}
+    dbserverDomainName: cosmosPostgres.outputs.dbserverDomainName
+    dbserverUser: cosmosPostgres.outputs.dbserverUser
+    dbserverDatabaseName: cosmosPostgres.outputs.dbserverDatabaseName
+    {% endif %}
+
     {% if cookiecutter.project_host == "aca" %}
     dbserverPassword: dbserverPassword
     {% endif %}
+
     {% endif %}
+
     {% if cookiecutter.db_resource == "postgres-addon" %}
-    postgresServiceId: db.outputs.dbserverID
+    postgresServiceId: postgresAddon.outputs.id
     {% endif %}
   }
 }
