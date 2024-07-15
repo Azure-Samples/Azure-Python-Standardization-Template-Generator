@@ -271,11 +271,13 @@ module web 'web.bicep' = {
     tags: tags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     keyVaultName: keyVault.outputs.name
+    
     {% if cookiecutter.project_host == "appservice" %}
     appCommandLine: 'entrypoint.sh'
     pythonVersion: '{{cookiecutter.python_version}}'
     virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
     {% endif %}
+
     {% if cookiecutter.project_host == "aca" %}
     identityName: '${prefix}-id-web'
     containerAppsEnvironmentName: containerApps.outputs.environmentName
@@ -297,8 +299,6 @@ module web 'web.bicep' = {
 
     {% if cookiecutter.project_host == "aca" %}
     dbserverPassword: dbserverPassword
-    {% endif %}
-
     {% endif %}
 
     {% if cookiecutter.db_resource == "postgres-addon" %}
