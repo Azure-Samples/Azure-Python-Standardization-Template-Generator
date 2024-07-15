@@ -32,9 +32,18 @@ resource webIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   location: location
 }
 
+module keyVaultRoleAssignment 'core/security/role.bicep' = {
+  name: 'webRoleAssignment'
+  params: {
+    principalId: webIdentity.properties.principalId
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+  }
+}
+
 {% if cookiecutter.project_host == "aca" %}
 module app 'core/host/container-app-upsert.bicep' = {
   name: '${serviceName}-container-app-module'
+  dependsOn: [keyVaultRoleAssignment]
   params: {
     name: name
     location: location

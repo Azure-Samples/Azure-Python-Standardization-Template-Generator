@@ -71,9 +71,10 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
         tags: tags
       }
       {
-        addressPrefix: '10.0.1.0/24'
+        addressPrefix: '10.0.2.0/23'
         name: 'web'
         tags: tags
+        {% if cookiecutter.project_host == "appservice" %}
         delegations: [
           {
             name: 'msft-web-serverfarm-delegation'
@@ -82,6 +83,7 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
             }
           }
         ]
+        {% endif %}
         serviceEndpoints: [
           { 
             service: 'Microsoft.KeyVault'
