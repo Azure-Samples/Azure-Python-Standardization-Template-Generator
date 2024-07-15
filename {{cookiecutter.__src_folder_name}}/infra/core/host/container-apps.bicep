@@ -36,13 +36,13 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.5.2
   }
 }
 
-module containerRegistry 'container-registry.bicep' = {
+module containerRegistry 'br/public:avm/res/container-registry/registry:0.3.1' = {
   name: '${name}-container-registry'
   scope: !empty(containerRegistryResourceGroupName) ? resourceGroup(containerRegistryResourceGroupName) : resourceGroup()
   params: {
     name: containerRegistryName
     location: location
-    adminUserEnabled: containerRegistryAdminUserEnabled
+    acrAdminUserEnabled: containerRegistryAdminUserEnabled
     tags: tags
   }
 }
