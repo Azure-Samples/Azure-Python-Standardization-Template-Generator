@@ -187,6 +187,7 @@ module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos
     prefix: prefix
     dbserverDatabaseName: 'relecloud'
     sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    keyvaultName: keyVault.outputs.name
   }
 }
 

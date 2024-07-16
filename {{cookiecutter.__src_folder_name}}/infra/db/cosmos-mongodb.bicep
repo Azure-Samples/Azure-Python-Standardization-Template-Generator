@@ -4,6 +4,7 @@ param tags object = {}
 param prefix string
 param dbserverDatabaseName string
 param sqlRoleAssignmentPrincipalId string
+param keyvaultName string
 
 module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = {
   name: name
@@ -30,6 +31,22 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
         name: dbserverDatabaseName
       }
     ]
+  }
+}
+
+resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
+  name: name
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyvaultName
+}
+
+resource cosmosConnectionString 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
+  parent: keyVault
+  name: 'AZURE-COSMOS-CONNECTION-STRING'
+  properties: {
+    value: cosmos.listConnectionStrings().connectionStrings[0].connectionString
   }
 }
 
