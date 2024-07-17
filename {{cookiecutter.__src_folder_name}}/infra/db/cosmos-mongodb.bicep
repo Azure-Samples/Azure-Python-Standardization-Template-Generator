@@ -5,6 +5,8 @@ param prefix string
 param dbserverDatabaseName string
 param sqlRoleAssignmentPrincipalId string
 param keyvaultName string
+param privateDNSZoneResourceId string
+param subnetResourceId string
 
 module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = {
   name: name
@@ -29,6 +31,16 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
     mongodbDatabases: [
       {
         name: dbserverDatabaseName
+      }
+    ]
+    privateEndpoints: [
+      {
+        privateDnsZoneResourceIds: [
+          privateDNSZoneResourceId
+        ]
+        service: 'MongoDB'
+        subnetResourceId: subnetResourceId
+        tags: tags
       }
     ]
   }

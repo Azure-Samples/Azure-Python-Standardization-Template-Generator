@@ -14,7 +14,7 @@ param location string
 @description('DBServer administrator password')
 param dbserverPassword string
 {% else %}
-var dbserverPassword = '' // Only used by the linter
+var dbserverPassword = guid(name, resourceGroup.name) // Only used by the linter
 {% endif %}
 
 {% if cookiecutter.project_backend in ("django", "flask") %}
@@ -33,6 +33,9 @@ param principalId string = ''
 var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var prefix = '${name}-${resourceToken}'
 var tags = { 'azd-env-name': name }
+
+var DATABASE_RESOURCE = '{{cookiecutter.db_resource}}'
+var PROJECT_HOST = '{{cookiecutter.project_host}}'
 
 var secrets = [
   {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
@@ -91,6 +94,11 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
             service: 'Microsoft.KeyVault'
           }
         ]
+      }
+      {
+        addressPrefix: '10.0.4.0/23'
+        name: 'db'
+        tags: tags
       }
     ]
   }
@@ -175,8 +183,6 @@ module roleAssignment 'core/security/role.bicep' = {
   }
 }
 
-var DATABASE_RESOURCE = '{{cookiecutter.db_resource}}'
-
 module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos-mongodb') {
   name: 'cosmosMongoDb'
   scope: resourceGroup
@@ -188,6 +194,8 @@ module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos
     dbserverDatabaseName: 'relecloud'
     sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
     keyvaultName: keyVault.outputs.name
+    privateDNSZoneResourceId: privateDnsZone.outputs.resourceId
+    subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
   }
 }
 
@@ -242,9 +250,8 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   }
 }
 
-{% if cookiecutter.project_host == "aca" %}
 // Container apps host (including container registry)
-module containerApps 'core/host/container-apps.bicep' = {
+module containerApps 'core/host/container-apps.bicep' = if (PROJECT_HOST == 'aca') {
   name: 'container-apps'
   scope: resourceGroup
   params: {
@@ -256,7 +263,6 @@ module containerApps 'core/host/container-apps.bicep' = {
     virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
-{% endif %}
 
 // Web frontend
 module web 'web.bicep' = {
