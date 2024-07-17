@@ -238,8 +238,7 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   }
 }
 
-{% if cookiecutter.project_host == "aca" %}
-{% if cookiecutter.database_resource == "postgres-addon" %}
+{% if cookiecutter.project_host == "aca" and cookiecutter.db_resource == "postgres-addon" %}
 module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgres-addon' && PROJECT_HOST == 'aca') {
   name: 'postgresAddon'
   scope: resourceGroup
@@ -253,6 +252,7 @@ module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgr
 }
 {% endif %}
 
+{% if cookiecutter.project_host == "aca" %}
 // Container apps host (including container registry)
 module containerApps 'core/host/container-apps.bicep' = if (PROJECT_HOST == 'aca') {
   name: 'container-apps'
