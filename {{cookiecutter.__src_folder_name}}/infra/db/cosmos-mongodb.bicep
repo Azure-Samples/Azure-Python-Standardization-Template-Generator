@@ -7,6 +7,7 @@ param sqlRoleAssignmentPrincipalId string
 param keyvaultName string
 param privateDNSZoneResourceId string
 param subnetResourceId string
+param applicationSubnetResourceId string
 
 var mongoDbName = '${take(prefix, 36)}-mongodb'
 
@@ -39,7 +40,7 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
       publicNetworkAccess: 'Disabled'
       ipRules: []
       virtualNetworkRules: [
-        {subnetResourceId: subnetResourceId}
+        {subnetResourceId: applicationSubnetResourceId}
       ]
     }
     privateEndpoints: [
