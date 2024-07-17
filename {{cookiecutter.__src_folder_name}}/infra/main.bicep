@@ -212,18 +212,6 @@ module cosmosPostgres 'db/cosmos-postgres.bicep' = if(DATABASE_RESOURCE == 'cosm
   }
 }
 
-module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgres-addon' && PROJECT_HOST == 'aca') {
-  name: 'postgresAddon'
-  scope: resourceGroup
-  params: {
-    name: 'dbserver'
-    location: location
-    tags: tags
-    prefix: prefix
-    containerAppsEnvironmentName: containerApps.outputs.environmentName
-  }
-}
-
 module postgresFlexible 'db/postgres-flexible.bicep' = if(DATABASE_RESOURCE == 'postgres-flexible') {
   name: 'postgresFlexible'
   scope: resourceGroup
@@ -250,6 +238,21 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   }
 }
 
+{% if cookiecutter.project_host == "aca" %}
+{% if cookiecutter.database_resource == "postgres-addon" %}
+module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgres-addon' && PROJECT_HOST == 'aca') {
+  name: 'postgresAddon'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+  }
+}
+{% endif %}
+
 // Container apps host (including container registry)
 module containerApps 'core/host/container-apps.bicep' = if (PROJECT_HOST == 'aca') {
   name: 'container-apps'
@@ -263,6 +266,7 @@ module containerApps 'core/host/container-apps.bicep' = if (PROJECT_HOST == 'aca
     virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
   }
 }
+{% endif %}
 
 // Web frontend
 module web 'web.bicep' = {
