@@ -8,10 +8,12 @@ param keyvaultName string
 param privateDNSZoneResourceId string
 param subnetResourceId string
 
+var mongoDbName = '${take(prefix, 36)}-mongodb'
+
 module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = {
   name: name
   params: {
-    name: '${take(prefix, 36)}-mongodb' // Max 44 characters
+    name: mongoDbName // Max 44 characters
     location: location
     tags: tags
 
@@ -47,7 +49,7 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
 }
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' existing = {
-  name: name
+  name: mongoDbName
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
@@ -60,6 +62,7 @@ resource cosmosConnectionString 'Microsoft.KeyVault/vaults/secrets@2022-07-01' =
   properties: {
     value: cosmos.listConnectionStrings().connectionStrings[0].connectionString
   }
+  dependsOn: [databaseAccount]
 }
 
 output id string = databaseAccount.outputs.resourceId
