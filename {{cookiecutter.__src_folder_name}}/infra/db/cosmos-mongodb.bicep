@@ -35,6 +35,13 @@ module databaseAccount 'br/public:avm/res/document-db/database-account:0.5.6' = 
         name: dbserverDatabaseName
       }
     ]
+    networkRestrictions: {
+      publicNetworkAccess: 'Disabled'
+      ipRules: []
+      virtualNetworkRules: [
+        {subnetResourceId: subnetResourceId}
+      ]
+    }
     privateEndpoints: [
       {
         privateDnsZoneResourceIds: [
