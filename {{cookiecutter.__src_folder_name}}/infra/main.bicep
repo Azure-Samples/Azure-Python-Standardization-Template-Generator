@@ -110,11 +110,20 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
   }
 }
 
-module privateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
-  name: 'privateDnsZoneDeployment'
+module cosmosMongoPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
+  name: 'cosmosMongoPrivateDnsZone'
   scope: resourceGroup
   params: {
-    name: 'relecloud.net'
+    name: 'privatelink.mongo.cosmos.azure.com'
+    tags: tags
+  }
+}
+
+module keyvaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
+  name: 'keyvaultPrivateDnsZone'
+  scope: resourceGroup
+  params: {
+    name: 'privatelink.vaultcore.azure.net'
     tags: tags
   }
 }
@@ -152,7 +161,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
       {
         name: '${name}-keyvault-pe'
         subnetResourceId: virtualNetwork.outputs.subnetResourceIds[0]
-        privateDnsZoneResourceIds: [privateDnsZone.outputs.resourceId]
+        privateDnsZoneResourceIds: [keyvaultPrivateDnsZone.outputs.resourceId]
       }
     ]
     diagnosticSettings: [
@@ -200,7 +209,7 @@ module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos
     dbserverDatabaseName: 'relecloud'
     sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
     keyvaultName: keyVault.outputs.name
-    privateDNSZoneResourceId: privateDnsZone.outputs.resourceId
+    privateDNSZoneResourceId: cosmosMongoPrivateDnsZone.outputs.resourceId
     subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
     applicationSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[1]
   }
