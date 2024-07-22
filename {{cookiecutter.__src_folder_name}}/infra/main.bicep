@@ -110,15 +110,6 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
   }
 }
 
-module cosmosMongoPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
-  name: 'cosmosMongoPrivateDnsZone'
-  scope: resourceGroup
-  params: {
-    name: 'privatelink.mongo.cosmos.azure.com'
-    tags: tags
-  }
-}
-
 module keyvaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
   name: 'keyvaultPrivateDnsZone'
   scope: resourceGroup
@@ -209,7 +200,6 @@ module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos
     dbserverDatabaseName: 'relecloud'
     sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
     keyvaultName: keyVault.outputs.name
-    privateDNSZoneResourceId: cosmosMongoPrivateDnsZone.outputs.resourceId
     subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
     applicationSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[1]
   }
