@@ -13,9 +13,11 @@ param location string
 @secure()
 @description('DBServer administrator password')
 param dbserverPassword string
+{% else %}
+var dbserverPassword = guid(name, resourceGroup.name) // Only used by the linter
 {% endif %}
 
-{% if cookiecutter.project_backend in ("django", "flask") %}
+{% if cookiecutter.project_backend in ("django") %}
 @secure()
 @description('Secret Key')
 param secretKey string
@@ -32,6 +34,9 @@ var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var prefix = '${name}-${resourceToken}'
 var tags = { 'azd-env-name': name }
 
+var DATABASE_RESOURCE = '{{cookiecutter.db_resource}}'
+var PROJECT_HOST = '{{cookiecutter.project_host}}'
+
 var secrets = [
   {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
   {
@@ -39,7 +44,7 @@ var secrets = [
     value: dbserverPassword
   }
   {% endif %}
-  {% if cookiecutter.project_backend in ("django", "flask") %}
+  {% if cookiecutter.project_backend in ("django") %}
   {
     name: 'SECRETKEY'
     value: secretKey
@@ -88,17 +93,28 @@ module virtualNetwork 'br/public:avm/res/network/virtual-network:0.1.8' = {
           { 
             service: 'Microsoft.KeyVault'
           }
+          {% if cookiecutter.db_resource == 'cosmos-mongodb' %}
+          {
+            service: 'Microsoft.AzureCosmosDB'
+          }
+          {% endif %}
         ]
+      }
+      {
+        addressPrefix: '10.0.4.0/23'
+        name: 'db'
+        tags: tags
+        serviceEndpoints: []
       }
     ]
   }
 }
 
-module privateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
-  name: 'privateDnsZoneDeployment'
+module keyvaultPrivateDnsZone 'br/public:avm/res/network/private-dns-zone:0.3.1' = {
+  name: 'keyvaultPrivateDnsZone'
   scope: resourceGroup
   params: {
-    name: 'relecloud.net'
+    name: 'privatelink.vaultcore.azure.net'
     tags: tags
   }
 }
@@ -136,7 +152,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.6.2' = {
       {
         name: '${name}-keyvault-pe'
         subnetResourceId: virtualNetwork.outputs.subnetResourceIds[0]
-        privateDnsZoneResourceIds: [privateDnsZone.outputs.resourceId]
+        privateDnsZoneResourceIds: [keyvaultPrivateDnsZone.outputs.resourceId]
       }
     ]
     diagnosticSettings: [
@@ -173,26 +189,45 @@ module roleAssignment 'core/security/role.bicep' = {
   }
 }
 
-module db 'db.bicep' = {
-  name: 'db'
+module cosmosMongoDb 'db/cosmos-mongodb.bicep' = if(DATABASE_RESOURCE == 'cosmos-mongodb') {
+  name: 'cosmosMongoDb'
   scope: resourceGroup
   params: {
     name: 'dbserver'
     location: location
     tags: tags
     prefix: prefix
-    {% if "mongodb" in cookiecutter.db_resource %}
-    keyVaultName: keyVault.outputs.name
-    {% endif %}
-    {% if cookiecutter.db_resource != "postgres-addon" %}
     dbserverDatabaseName: 'relecloud'
-    {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres")%}
+    sqlRoleAssignmentPrincipalId: web.outputs.SERVICE_WEB_IDENTITY_PRINCIPAL_ID
+    keyvaultName: keyVault.outputs.name
+    subnetResourceId: virtualNetwork.outputs.subnetResourceIds[2]
+    applicationSubnetResourceId: virtualNetwork.outputs.subnetResourceIds[1]
+  }
+}
+
+module cosmosPostgres 'db/cosmos-postgres.bicep' = if(DATABASE_RESOURCE == 'cosmos-postgres') {
+  name: 'cosmosPostgres'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    dbserverDatabaseName: 'relecloud'
     dbserverPassword: dbserverPassword
-    {% endif %}
-    {% if cookiecutter.db_resource == "postgres-addon" %}
-    containerAppsEnvironmentName: containerApps.outputs.environmentName
-    {% endif %}
+  }
+}
+
+module postgresFlexible 'db/postgres-flexible.bicep' = if(DATABASE_RESOURCE == 'postgres-flexible') {
+  name: 'postgresFlexible'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    dbserverDatabaseName: 'relecloud'
+    dbserverPassword: dbserverPassword
   }
 }
 
@@ -209,9 +244,23 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   }
 }
 
+{% if cookiecutter.project_host == "aca" and cookiecutter.db_resource == "postgres-addon" %}
+module postgresAddon 'db/postgres-addon.bicep' = if(DATABASE_RESOURCE == 'postgres-addon' && PROJECT_HOST == 'aca') {
+  name: 'postgresAddon'
+  scope: resourceGroup
+  params: {
+    name: 'dbserver'
+    location: location
+    tags: tags
+    prefix: prefix
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+  }
+}
+{% endif %}
+
 {% if cookiecutter.project_host == "aca" %}
 // Container apps host (including container registry)
-module containerApps 'core/host/container-apps.bicep' = {
+module containerApps 'core/host/container-apps.bicep' = if (PROJECT_HOST == 'aca') {
   name: 'container-apps'
   scope: resourceGroup
   params: {
@@ -241,27 +290,38 @@ module web 'web.bicep' = {
     tags: tags
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     keyVaultName: keyVault.outputs.name
+
     {% if cookiecutter.project_host == "appservice" %}
     appCommandLine: 'entrypoint.sh'
     pythonVersion: '{{cookiecutter.python_version}}'
     virtualNetworkSubnetId: virtualNetwork.outputs.subnetResourceIds[1]
     {% endif %}
+
     {% if cookiecutter.project_host == "aca" %}
     identityName: '${prefix}-id-web'
     containerAppsEnvironmentName: containerApps.outputs.environmentName
     containerRegistryName: containerApps.outputs.registryName
     exists: webAppExists
     {% endif %}
-    {% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
-    dbserverDomainName: db.outputs.dbserverDomainName
-    dbserverUser: db.outputs.dbserverUser
-    dbserverDatabaseName: db.outputs.dbserverDatabaseName
-    {% if cookiecutter.project_host == "aca" %}
+
+    {% if cookiecutter.db_resource  == "postgres-flexible" %}
+    dbserverDomainName: postgresFlexible.outputs.dbserverDomainName
+    dbserverUser: postgresFlexible.outputs.dbserverUser
+    dbserverDatabaseName: postgresFlexible.outputs.dbserverDatabaseName
+    {% endif %}
+
+    {% if cookiecutter.db_resource  == "cosmos-postgres" %}
+    dbserverDomainName: cosmosPostgres.outputs.dbserverDomainName
+    dbserverUser: cosmosPostgres.outputs.dbserverUser
+    dbserverDatabaseName: cosmosPostgres.outputs.dbserverDatabaseName
+    {% endif %}
+
+    {% if cookiecutter.project_host == "aca" and cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %}
     dbserverPassword: dbserverPassword
     {% endif %}
-    {% endif %}
+
     {% if cookiecutter.db_resource == "postgres-addon" %}
-    postgresServiceId: db.outputs.dbserverID
+    postgresServiceId: postgresAddon.outputs.id
     {% endif %}
   }
 }
