@@ -17,7 +17,7 @@ param dbserverPassword string
 var dbserverPassword = guid(name, resourceGroup.name) // Only used by the linter
 {% endif %}
 
-{% if cookiecutter.project_backend in ("django", "flask") %}
+{% if cookiecutter.project_backend in ("django") %}
 @secure()
 @description('Secret Key')
 param secretKey string
@@ -44,7 +44,7 @@ var secrets = [
     value: dbserverPassword
   }
   {% endif %}
-  {% if cookiecutter.project_backend in ("django", "flask") %}
+  {% if cookiecutter.project_backend in ("django") %}
   {
     name: 'SECRETKEY'
     value: secretKey
