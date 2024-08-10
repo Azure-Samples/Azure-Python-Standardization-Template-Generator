@@ -68,7 +68,7 @@ module userRole 'cosmos-sql-role-assign.bicep' = [for principalId in principalId
 
 output accountId string = cosmos.outputs.id
 output accountName string = cosmos.outputs.name
-output connectionStringKey string = cosmos.outputs.connectionStringKey
+output connectionStringName string = cosmos.outputs.connectionStringName
 output databaseName string = databaseName
 output endpoint string = cosmos.outputs.endpoint
 output roleDefinitionId string = roleDefinition.outputs.id
