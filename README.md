@@ -1,6 +1,6 @@
 # Cookiecutter Relecloud
 
-[![Github Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fkjaymiller%2Fcookiecutter-relecloud%2Fbadge%3Fref%3Dmain&style=flat-square)](https://actions-badge.atrox.dev/kjaymiller/cookiecutter-relecloud/goto?ref=main)
+[![Github Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2FAzure-Samples%2FAzure-Python-Standardization-Template-Generator%2Fbadge%3Fref%3Dmain&style=flat-square)](https://actions-badge.atrox.dev/Azure-Samples/Azure-Python-Standardization-Template-Generator/goto?ref=main)
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
@@ -19,7 +19,7 @@ Relecloud is a sample web app created by the Microsoft Python Cloud Advocacy tea
 
 While most cookiecutter generated projects are designed to build with a particular stack, Cookiecutter-Relecloud allows you to create a relecloud project with your choice of web framework, database, and deployment options.
 
-https://github.com/kjaymiller/cookiecutter-relecloud/assets/8632637/872a41ad-a48e-49ad-956e-370e302508d2
+https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator/assets/8632637/872a41ad-a48e-49ad-956e-370e302508d2
 
 ### Features
 
@@ -46,7 +46,7 @@ https://github.com/kjaymiller/cookiecutter-relecloud/assets/8632637/872a41ad-a48
 
 |✅ (Developed)|🛠️ (In Development)|❌ (Currently Not Supported)|
 
-To request support please create a [new discussion](https://github.com/kjaymiller/cookiecutter-relecloud/discussions/new?category=ideas).
+To request support please create a [new discussion](https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator/discussions/new?category=ideas).
 
 ### Deployed Project Examples
 
@@ -101,7 +101,7 @@ python -m pip install cruft packaging ruff
 3. Generate the project using this template
 
 ```sh
-python -m cruft create https://github.com/kjaymiller/cookiecutter-relecloud
+python -m cruft create https://github.com/Azure-Samples/Azure-Python-Standardization-Template-Generator
 ```
 
 ## Getting Updates from this Template
