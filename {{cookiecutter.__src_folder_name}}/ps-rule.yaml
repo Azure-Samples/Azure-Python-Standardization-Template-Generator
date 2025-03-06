@@ -15,3 +15,8 @@ rule:
   # Don't require Postgres AAD/MI for now 
   - Azure.PostgreSQL.AAD
   - Azure.PostgreSQL.AADOnly
+  # These are false positives for mongodb on cosmos
+  - Azure.Cosmos.DisableMetadataWrite
+  - Azure.Cosmos.MinTLS
+  # 'citus' is the builtin username for postgres for cosmos
+  - Azure.Deployment.AdminUsername

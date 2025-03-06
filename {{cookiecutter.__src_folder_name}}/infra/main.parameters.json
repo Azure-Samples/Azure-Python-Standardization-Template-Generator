@@ -16,7 +16,7 @@
       }{% if cookiecutter.db_resource in ("postgres-flexible", "cosmos-postgres") %},
       "dbserverPassword": {
         "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} DBSERVERPASSWORD)"
-      }{% endif %}{% if cookiecutter.project_backend in ("django", "flask") %},
+      }{% endif %}{% if cookiecutter.project_backend in ("django") %},
       "secretKey": {
         "value": "$(secretOrRandomPassword ${AZURE_KEY_VAULT_NAME} SECRETKEY)"
       }
