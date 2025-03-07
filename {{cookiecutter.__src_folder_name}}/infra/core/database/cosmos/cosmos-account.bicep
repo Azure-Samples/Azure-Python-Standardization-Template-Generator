@@ -3,8 +3,7 @@ param name string
 param location string = resourceGroup().location
 param tags object = {}
 
-@secure()
-param connectionStringKey string = 'AZURE-COSMOS-CONNECTION-STRING'
+param connectionStringName string = 'AZURE-COSMOS-CONNECTION-STRING'
 param keyVaultName string
 
 @allowed([ 'GlobalDocumentDB', 'MongoDB', 'Parse' ])
@@ -35,7 +34,7 @@ resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2022-08-15' = {
 
 resource cosmosConnectionString 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   parent: keyVault
-  name: connectionStringKey
+  name: connectionStringName
   properties: {
     value: cosmos.listConnectionStrings().connectionStrings[0].connectionString
   }
@@ -45,7 +44,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-output connectionStringKey string = connectionStringKey
+output connectionStringName string = connectionStringName
 output endpoint string = cosmos.properties.documentEndpoint
 output id string = cosmos.id
 output name string = cosmos.name
